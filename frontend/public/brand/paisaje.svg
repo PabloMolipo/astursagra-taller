@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 360" preserveAspectRatio="xMidYMid slice">
+  <!-- Del norte a La Sagra: montañas asturianas al fondo, campos de cereal y la carretera al taller -->
+  <defs>
+    <linearGradient id="cielo" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#12305a"/>
+      <stop offset="0.45" stop-color="#2f6aa8"/>
+      <stop offset="0.68" stop-color="#e9b65a"/>
+      <stop offset="0.75" stop-color="#f6d58a"/>
+    </linearGradient>
+  </defs>
+  <rect width="1600" height="360" fill="url(#cielo)"/>
+  <circle cx="1150" cy="215" r="70" fill="#fbe3a0" opacity="0.85"/>
+
+  <!-- Picos al fondo -->
+  <path d="M0,250 L80,200 L150,225 L240,160 L300,190 L380,130 L450,175 L520,150 L600,200 L700,140 L780,185 L860,120 L940,170 L1020,145 L1100,195 L1180,150 L1260,185 L1340,135 L1420,180 L1500,155 L1600,190 L1600,262 L0,262 Z" fill="#2d5d93"/>
+  <g fill="#eef3f9">
+    <polygon points="240,160 228,174 236,172 241,178 247,171 253,174"/>
+    <polygon points="380,130 366,146 374,143 380,150 387,143 395,146"/>
+    <polygon points="700,140 687,155 695,152 701,158 707,152 714,154"/>
+    <polygon points="860,120 845,137 853,134 860,141 867,134 876,137"/>
+    <polygon points="1180,150 1168,164 1175,162 1181,168 1187,161 1193,164"/>
+    <polygon points="1340,135 1326,151 1334,148 1340,155 1347,148 1355,151"/>
+  </g>
+  <path d="M0,265 L120,225 L210,250 L330,205 L430,245 L560,215 L680,250 L820,210 L960,248 L1080,220 L1220,252 L1360,215 L1480,245 L1600,225 L1600,282 L0,282 Z" fill="#1d4573"/>
+
+  <!-- Campos de La Sagra -->
+  <path d="M0,270 C300,250 600,262 900,255 C1200,248 1400,258 1600,250 L1600,360 L0,360 Z" fill="#d9a441"/>
+  <path d="M0,300 C250,280 500,295 800,288 C1100,281 1350,300 1600,285 L1600,360 L0,360 Z" fill="#c98a2b"/>
+  <g fill="none" stroke="#b07624" stroke-width="2" opacity="0.7">
+    <path d="M0,312 C260,294 520,308 800,300 C1080,292 1340,312 1600,298"/>
+    <path d="M0,324 C260,306 520,320 800,312 C1080,304 1340,324 1600,310"/>
+    <path d="M0,276 C300,260 600,270 900,264 C1200,258 1400,266 1600,260" stroke="#c48f35"/>
+  </g>
+  <path d="M0,335 C300,320 700,340 1000,327 C1250,317 1450,335 1600,325 L1600,360 L0,360 Z" fill="#a96f1f"/>
+
+  <!-- Carretera -->
+  <path d="M690,360 C750,322 815,290 858,262 L870,262 C868,292 885,328 940,360 Z" fill="#4a4f57"/>
+  <path d="M815,360 C834,322 852,290 864,262" fill="none" stroke="#f2b705" stroke-width="3" stroke-dasharray="10 10"/>
+  <g>
+    <rect x="826" y="293" width="30" height="10" rx="3" fill="#e9eef5"/>
+    <rect x="832" y="286" width="17" height="9" rx="3" fill="#e9eef5"/>
+    <circle cx="833" cy="304" r="3" fill="#1f2933"/>
+    <circle cx="849" cy="304" r="3" fill="#1f2933"/>
+  </g>
+
+  <!-- Tractor azul en el campo -->
+  <g>
+    <rect x="1236" y="290" width="30" height="13" rx="2" fill="#1e4e8c"/>
+    <rect x="1256" y="276" width="13" height="16" rx="2" fill="#1e4e8c"/>
+    <rect x="1258" y="279" width="9" height="7" fill="#9cc3e6"/>
+    <rect x="1243" y="282" width="3" height="9" fill="#1f2933"/>
+    <circle cx="1262" cy="305" r="10" fill="#1f2933"/>
+    <circle cx="1262" cy="305" r="4" fill="#f2b705"/>
+    <circle cx="1240" cy="307" r="6" fill="#1f2933"/>
+    <circle cx="1240" cy="307" r="2.5" fill="#f2b705"/>
+  </g>
+
+  <!-- Espigas en primer plano -->
+  <g fill="none" stroke="#7a4f14" stroke-width="2.5" stroke-linecap="round">
+    <path d="M40,360 Q42,330 50,300"/><path d="M70,360 Q70,325 64,292"/><path d="M100,360 Q104,330 116,304"/>
+    <path d="M130,360 Q128,332 122,310"/><path d="M1480,360 Q1482,328 1492,298"/><path d="M1510,360 Q1508,326 1500,294"/>
+    <path d="M1545,360 Q1550,330 1562,306"/><path d="M1575,360 Q1572,334 1566,312"/>
+  </g>
+  <g fill="#e2b04f">
+    <ellipse cx="51" cy="290" rx="4.5" ry="12" transform="rotate(12 51 290)"/>
+    <ellipse cx="63" cy="281" rx="4.5" ry="12" transform="rotate(-8 63 281)"/>
+    <ellipse cx="119" cy="294" rx="4.5" ry="12" transform="rotate(25 119 294)"/>
+    <ellipse cx="121" cy="299" rx="4" ry="11" transform="rotate(-12 121 299)"/>
+    <ellipse cx="1494" cy="287" rx="4.5" ry="12" transform="rotate(15 1494 287)"/>
+    <ellipse cx="1499" cy="283" rx="4.5" ry="12" transform="rotate(-10 1499 283)"/>
+    <ellipse cx="1565" cy="296" rx="4.5" ry="12" transform="rotate(25 1565 296)"/>
+    <ellipse cx="1565" cy="301" rx="4" ry="11" transform="rotate(-10 1565 301)"/>
+  </g>
+</svg>

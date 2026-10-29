@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 200" role="img" aria-label="AsturSagra · Taller mecánico">
+  <title>AsturSagra · Taller mecánico</title>
+  <!-- Logo horizontal para fondos oscuros -->
+  <g transform="translate(10 10) scale(0.3516)">
+    <circle cx="256" cy="256" r="240" fill="#0A0A0A" stroke="#C6FF00" stroke-width="16"/>
+    <g transform="rotate(45 256 256)" fill="#C6FF00">
+      <rect x="250" y="104" width="12" height="336" rx="6"/>
+      <ellipse cx="256" cy="96" rx="14" ry="32"/>
+      <ellipse cx="232" cy="144" rx="16" ry="32" transform="rotate(-25 232 144)"/>
+      <ellipse cx="280" cy="144" rx="16" ry="32" transform="rotate(25 280 144)"/>
+      <ellipse cx="232" cy="200" rx="16" ry="32" transform="rotate(-25 232 200)"/>
+      <ellipse cx="280" cy="200" rx="16" ry="32" transform="rotate(25 280 200)"/>
+      <ellipse cx="232" cy="256" rx="16" ry="32" transform="rotate(-25 232 256)"/>
+      <ellipse cx="280" cy="256" rx="16" ry="32" transform="rotate(25 280 256)"/>
+    </g>
+    <g transform="rotate(-45 256 256)">
+      <rect x="232" y="176" width="48" height="248" rx="24" fill="#EDEDED"/>
+      <circle cx="256" cy="144" r="68" fill="#EDEDED"/>
+      <rect x="232" y="64" width="48" height="80" rx="8" fill="#0A0A0A"/>
+    </g>
+  </g>
+  <text x="215" y="118" font-family="'Chakra Petch', 'Segoe UI', Arial, sans-serif" font-size="80" font-weight="700" letter-spacing="1"><tspan fill="#FFFFFF">ASTUR</tspan><tspan fill="#C6FF00">SAGRA</tspan></text>
+  <text x="219" y="158" font-family="'Chakra Petch', 'Segoe UI', Arial, sans-serif" font-size="22" font-weight="600" letter-spacing="5" fill="#9A9A9A">TALLER MECÁNICO · LA SAGRA</text>
+</svg>

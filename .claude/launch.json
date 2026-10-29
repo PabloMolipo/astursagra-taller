@@ -1,0 +1,27 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "api",
+      "runtimeExecutable": "dotnet",
+      "runtimeArgs": [
+        "run",
+        "--project",
+        "backend/Taller.Api",
+        "--launch-profile",
+        "http"
+      ],
+      "port": 5078
+    },
+    {
+      "name": "web",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "start",
+        "--prefix",
+        "frontend"
+      ],
+      "port": 4200
+    }
+  ]
+}

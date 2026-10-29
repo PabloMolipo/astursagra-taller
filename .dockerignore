@@ -1,0 +1,14 @@
+**/node_modules
+**/dist
+**/bin
+**/obj
+**/.angular
+backend/Taller.Api/media
+backend/Taller.Api/privado
+**/*.user
+**/appsettings.Development.json
+.git
+.vs
+.vscode
+*.xlsx
+backend/Taller.Api/geoip

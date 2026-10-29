@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="AsturSagra">
+  <title>AsturSagra</title>
+  <!-- Icono de aplicación: favicon, acceso directo, móvil (marca «carbono lima») -->
+  <rect x="10" y="10" width="492" height="492" rx="104" fill="#0A0A0A" stroke="#C6FF00" stroke-width="20"/>
+  <g transform="translate(256 256) scale(0.86) translate(-256 -256)">
+  <g transform="rotate(45 256 256)" fill="#C6FF00">
+    <rect x="248" y="104" width="16" height="336" rx="8"/>
+    <ellipse cx="256" cy="94" rx="16" ry="34"/>
+    <ellipse cx="230" cy="144" rx="18" ry="34" transform="rotate(-25 230 144)"/>
+    <ellipse cx="282" cy="144" rx="18" ry="34" transform="rotate(25 282 144)"/>
+    <ellipse cx="230" cy="200" rx="18" ry="34" transform="rotate(-25 230 200)"/>
+    <ellipse cx="282" cy="200" rx="18" ry="34" transform="rotate(25 282 200)"/>
+    <ellipse cx="230" cy="256" rx="18" ry="34" transform="rotate(-25 230 256)"/>
+    <ellipse cx="282" cy="256" rx="18" ry="34" transform="rotate(25 282 256)"/>
+  </g>
+  <g transform="rotate(-45 256 256)">
+    <rect x="228" y="176" width="56" height="248" rx="28" fill="#EDEDED"/>
+    <circle cx="256" cy="144" r="72" fill="#EDEDED"/>
+    <rect x="230" y="60" width="52" height="84" rx="8" fill="#0A0A0A"/>
+  </g>
+  </g>
+</svg>

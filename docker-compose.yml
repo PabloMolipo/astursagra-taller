@@ -1,0 +1,20 @@
+services:
+  db:
+    image: postgres:17
+    container_name: taller-db
+    environment:
+      POSTGRES_DB: taller
+      POSTGRES_USER: taller
+      POSTGRES_PASSWORD: taller_dev
+    ports:
+      - "5432:5432"
+    volumes:
+      - taller-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U taller -d taller"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  taller-pgdata:

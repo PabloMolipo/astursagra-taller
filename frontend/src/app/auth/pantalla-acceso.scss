@@ -1,0 +1,99 @@
+.pantalla {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem 1rem;
+  background:
+    linear-gradient(115deg, transparent 0 66%, var(--primary) 66% 66.6%, transparent 66.6% 68%, rgba(198, 255, 0, 0.35) 68% 68.3%, transparent 68.3%),
+    radial-gradient(ellipse at 70% 30%, rgba(198, 255, 0, 0.08), transparent 60%),
+    var(--carbono),
+    var(--bg);
+}
+
+.tarjeta {
+  width: 100%;
+  max-width: 400px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-top: 3px solid var(--primary);
+  border-radius: var(--radius);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6);
+  padding: 1.75rem 1.75rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.logo img {
+  display: block;
+  width: 240px;
+  max-width: 100%;
+  margin: 0 auto 0.25rem;
+}
+
+h1 {
+  font-size: 1.35rem;
+  text-align: center;
+}
+
+.ayuda {
+  margin: -0.4rem 0 0;
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.error {
+  margin: 0;
+}
+
+.con-boton {
+  display: flex;
+  gap: 0.4rem;
+
+  input {
+    flex: 1;
+    min-width: 0;
+  }
+}
+
+.ver {
+  border: 1px solid var(--border-strong);
+  background: var(--surface-2);
+  border-radius: var(--radius);
+  padding: 0 0.7rem;
+  font: inherit;
+  font-size: 0.85rem;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.recordar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.entrar {
+  justify-content: center;
+  padding: 0.7rem;
+  font-weight: 600;
+}
+
+.pie {
+  margin: 0;
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.enlace {
+  background: none;
+  border: 0;
+  color: var(--primary);
+  font: inherit;
+  cursor: pointer;
+  text-decoration: underline;
+}

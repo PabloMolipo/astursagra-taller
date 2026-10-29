@@ -1,0 +1,209 @@
+/* Marco común de las áreas con sesión (Gestión y Mi área): cabecera negra con filo lima, franja de carbono y contenido. */
+
+.marco {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.marco-header {
+  background: var(--nav-bg);
+  color: var(--nav-text);
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  padding: 0 1.5rem;
+  min-height: 58px;
+  flex-wrap: wrap;
+  border-bottom: 2px solid var(--primary);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
+.marca {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: none;
+  }
+
+  img {
+    display: block;
+  }
+
+  .nombre {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 1.35rem;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+  }
+
+  .astur {
+    color: #fff;
+  }
+
+  .sagra {
+    color: var(--primary);
+  }
+}
+
+.marco-nav {
+  display: flex;
+  gap: 0.1rem;
+  flex-wrap: wrap;
+  align-self: stretch;
+
+  a {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    color: var(--nav-text);
+    padding: 0 0.85rem;
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 0.82rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    text-decoration: none;
+    border-bottom: 3px solid transparent;
+    margin-bottom: -2px;
+    min-height: 58px;
+
+    &:hover {
+      color: #fff;
+      background: rgba(255, 255, 255, 0.04);
+    }
+
+    &.active {
+      color: var(--primary);
+      border-bottom-color: var(--primary);
+    }
+  }
+}
+
+.icono {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  flex-shrink: 0;
+}
+
+.marco-derecha {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.estado-api {
+  font-size: 0.8rem;
+  color: var(--danger);
+}
+
+/* Franja bajo la cabecera: carbono con un corte diagonal lima. */
+.hero {
+  height: 150px;
+  background:
+    linear-gradient(115deg, transparent 0 62%, var(--primary) 62% 62.6%, transparent 62.6% 64%, rgba(198, 255, 0, 0.35) 64% 64.3%, transparent 64.3%),
+    linear-gradient(90deg, rgba(10, 10, 10, 0.95) 0%, rgba(10, 10, 10, 0.6) 60%, rgba(10, 10, 10, 0.2) 100%),
+    var(--carbono);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+}
+
+.hero-texto {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1.5rem 1.5rem;
+  color: #fff;
+
+  p {
+    margin: 0;
+  }
+
+  .lema {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 1.8rem;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+  }
+
+  .servicios {
+    margin-top: 0.3rem;
+    font-family: var(--font-display);
+    font-size: 0.85rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--primary);
+  }
+}
+
+.marco-main {
+  flex: 1;
+  width: 100%;
+  max-width: 1200px;
+  margin: -1.75rem auto 0;
+  padding: 0 1.5rem 1.5rem;
+
+  /* La cabecera de cada página queda sobre la franja, en una "pestaña" con filo lima. */
+  > * > .page-header:first-child {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--primary);
+    border-radius: var(--radius);
+    padding: 0.9rem 1.25rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .marco-header {
+    padding: 0.75rem 1rem;
+    gap: 0.75rem;
+    position: static;
+  }
+
+  .marco-nav a {
+    min-height: 40px;
+  }
+
+  .marco-derecha {
+    margin-left: 0;
+  }
+
+  .hero {
+    height: 110px;
+  }
+
+  .hero-texto {
+    padding: 0 1rem 1.25rem;
+
+    .lema {
+      font-size: 1.3rem;
+    }
+
+    .servicios {
+      font-size: 0.75rem;
+    }
+  }
+
+  .marco-main {
+    padding: 0 1rem 1rem;
+  }
+}
+
+/* El tablero aprovecha las pantallas anchas: las seis columnas caben sin desplazar a partir de unos 1300 px. */
+.marco-main:has(app-tablero) {
+  max-width: 1800px;
+}

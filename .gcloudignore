@@ -1,0 +1,2 @@
+# Lo que no se sube a Cloud Build (además de lo que ignora .dockerignore).
+#!include:.dockerignore
