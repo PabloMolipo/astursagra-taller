@@ -1,3 +1,4 @@
+using System.IO.Compression;
 using System.Security.Cryptography;
 using Anthropic.Exceptions;
 using Microsoft.AspNetCore.Authorization;
@@ -414,7 +415,7 @@ public class CentralitasController(TallerDbContext db, AlmacenCentralitas almace
         {
             return NotFound();
         }
-        ResultadoXdf xdf;
+        ResultadoDefinicion xdf;
         try
         {
             await using var lectura = archivo.OpenReadStream();
@@ -431,6 +432,76 @@ public class CentralitasController(TallerDbContext db, AlmacenCentralitas almace
         {
             avisos.Insert(0, $"El XDF es para un binario de {esperado:N0} bytes y esta lectura tiene {c.Tamano:N0}: puede no corresponder a este software.");
         }
+        return await AplicarDefinicion(c, xdf, avisos, archivo, "definicion.xdf", ct);
+    }
+
+    /// <summary>
+    /// Importa un A2L (ASAP2) de este software, tal cual o comprimido con gzip (el portal lo comprime al subirlo: los A2L
+    /// pasan de 30 MB). Sus parámetros se sitúan en el binario de la lectura (ver <see cref="ImportadorA2l"/>) y se aplican
+    /// como los de un XDF.
+    /// </summary>
+    [HttpPost("{id:int}/importar-a2l")]
+    [RequestSizeLimit(MaximoA2lSubido + 64 * 1024)]
+    public async Task<ActionResult<ImportacionXdfResultado>> ImportarA2l(int id, IFormFile archivo, CancellationToken ct)
+    {
+        var c = await db.Centralitas.Include(x => x.Mapas).FirstOrDefaultAsync(x => x.Id == id, ct);
+        if (c is null)
+        {
+            return NotFound();
+        }
+        var binario = await Leer(id, ct);
+        if (binario is null)
+        {
+            return NotFound();
+        }
+        ResultadoDefinicion a2l;
+        try
+        {
+            a2l = ImportadorA2l.Leer(await ContenidoA2l(archivo, ct), binario);
+        }
+        catch (Exception e) when (e is FormatException or InvalidDataException)
+        {
+            ModelState.AddModelError(nameof(archivo), $"No se ha podido leer el A2L: {e.Message}");
+            return ValidationProblem(ModelState);
+        }
+        return await AplicarDefinicion(c, a2l, a2l.Avisos.ToList(), archivo, "definicion.a2l", ct);
+    }
+
+    private const long MaximoA2lSubido = 30L * 1024 * 1024;
+    private const long MaximoA2l = 300L * 1024 * 1024;
+
+    /// <summary>El A2L subido, descomprimido si viene en gzip (sin pasar de <see cref="MaximoA2l"/>).</summary>
+    private static async Task<byte[]> ContenidoA2l(IFormFile archivo, CancellationToken ct)
+    {
+        await using var lectura = archivo.OpenReadStream();
+        var cabecera = new byte[2];
+        var leidos = await lectura.ReadAtLeastAsync(cabecera, 2, throwOnEndOfStream: false, ct);
+        lectura.Position = 0;
+        Stream origen = leidos == 2 && cabecera[0] == 0x1F && cabecera[1] == 0x8B ? new GZipStream(lectura, CompressionMode.Decompress) : lectura;
+        await using (origen)
+        {
+            using var destino = new MemoryStream();
+            var bufer = new byte[81920];
+            int n;
+            while ((n = await origen.ReadAsync(bufer, ct)) > 0)
+            {
+                if (destino.Length + n > MaximoA2l)
+                {
+                    throw new InvalidDataException("el A2L descomprimido pasa de 300 MB.");
+                }
+                destino.Write(bufer, 0, n);
+            }
+            return destino.ToArray();
+        }
+    }
+
+    /// <summary>
+    /// Aplica los mapas de una definición importada (XDF o A2L) sobre los de la lectura en la misma dirección y tamaño, o
+    /// los añade; los guarda en la biblioteca de su software y registra la importación con el archivo subido.
+    /// </summary>
+    private async Task<ActionResult<ImportacionXdfResultado>> AplicarDefinicion(Centralita c, ResultadoDefinicion xdf, List<string> avisos,
+        IFormFile archivo, string nombrePorDefecto, CancellationToken ct)
+    {
         var importados = new List<MapaCentralita>();
         var omitidos = 0;
         foreach (var o in xdf.Mapas)
@@ -463,7 +534,7 @@ public class CentralitasController(TallerDbContext db, AlmacenCentralitas almace
                 BibliotecaSoftwareId = biblioteca?.Id,
                 CentralitaId = c.Id,
                 Titulo = xdf.Titulo is { } t ? t[..Math.Min(t.Length, 300)] : null,
-                NombreArchivo = Path.GetFileName(archivo.FileName).Trim() is { Length: > 0 } n ? n[..Math.Min(n.Length, 255)] : "definicion.xdf",
+                NombreArchivo = Path.GetFileName(archivo.FileName).Trim() is { Length: > 0 } n ? n[..Math.Min(n.Length, 255)] : nombrePorDefecto,
                 Archivo = guardado.Value.Nombre,
                 Tamano = archivo.Length,
                 Importados = importados.Count,

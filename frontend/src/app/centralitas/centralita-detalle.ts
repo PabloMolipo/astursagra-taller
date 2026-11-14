@@ -174,10 +174,14 @@ export class VisorMapa {
             ⬆ Importar XDF
             <input type="file" accept=".xdf,.xml" hidden (change)="importarXdf($any($event.target))" [disabled]="trabajando()" />
           </label>
+          <label class="btn small" [class.deshabilitado]="trabajando()" title="Descripción ASAP2 (A2L) de este número de software exacto: sus parámetros se sitúan en esta lectura">
+            ⬆ Importar A2L
+            <input type="file" accept=".a2l" hidden (change)="importarA2l($any($event.target))" [disabled]="trabajando()" />
+          </label>
         </div>
         @if (resultadoXdf(); as r) {
           <div class="aviso">
-            <strong>{{ r.titulo ?? 'XDF' }}:</strong> {{ r.importados }} mapas importados{{ r.omitidos ? ', ' + r.omitidos + ' omitidos (no caben en el archivo)' : '' }}.
+            <strong>{{ r.titulo ?? 'Definición' }}:</strong> {{ r.importados }} mapas importados{{ r.omitidos ? ', ' + r.omitidos + ' omitidos (no caben en el archivo)' : '' }}.
             @if (r.avisos.length) {
               <details><summary>{{ r.totalAvisos }} avisos</summary><ul>@for (a of r.avisos; track $index) { <li>{{ a }}</li> }</ul></details>
             }
@@ -925,12 +929,21 @@ export class CentralitaDetalleComponent implements OnInit {
   }
 
   protected importarXdf(campo: HTMLInputElement) {
+    this.importarDefinicion(campo, archivo => this.api.importarXdf(this.id(), archivo));
+  }
+
+  protected importarA2l(campo: HTMLInputElement) {
+    this.importarDefinicion(campo, archivo => this.api.importarA2l(this.id(), archivo));
+  }
+
+  private importarDefinicion(campo: HTMLInputElement, subir: (archivo: File) => ReturnType<Api['importarXdf']>) {
     const archivo = campo.files?.[0];
     campo.value = '';
     if (!archivo) return;
     this.trabajando.set(true);
     this.resultadoXdf.set(null);
-    this.api.importarXdf(this.id(), archivo).subscribe({
+    this.error.set(null);
+    subir(archivo).subscribe({
       next: r => {
         this.trabajando.set(false);
         this.resultadoXdf.set(r);

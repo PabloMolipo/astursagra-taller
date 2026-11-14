@@ -6,7 +6,7 @@ using Taller.Api.Domain;
 
 namespace Taller.Api.Centralitas;
 
-public record ResultadoXdf(string? Titulo, long? TamanoEsperado, IReadOnlyList<MapaCentralita> Mapas, IReadOnlyList<string> Avisos);
+public record ResultadoDefinicion(string? Titulo, long? TamanoEsperado, IReadOnlyList<MapaCentralita> Mapas, IReadOnlyList<string> Avisos);
 
 /// <summary>
 /// Lee un archivo de definición de TunerPro (XDF, XML): sus tablas (mapas y curvas) y constantes con dirección, tamaño,
@@ -23,7 +23,7 @@ public static partial class ImportadorXdf
     private const int PorColumnas = 0x04;
     private const int ComaFlotante = 0x10000;
 
-    public static ResultadoXdf Leer(Stream contenido)
+    public static ResultadoDefinicion Leer(Stream contenido)
     {
         // Sin DTD ni entidades externas: el archivo viene del usuario.
         using var lector = XmlReader.Create(contenido, new XmlReaderSettings { DtdProcessing = DtdProcessing.Prohibit, XmlResolver = null });
@@ -325,7 +325,8 @@ public static class Formulas
             var inicio = i;
             while (i < texto.Length && (char.IsDigit(texto[i]) || texto[i] == '.' || ((texto[i] == 'e' || texto[i] == 'E') && i > inicio)))
             {
-                i++;
+                // Exponente con signo: 1.5e-005.
+                i += (texto[i] == 'e' || texto[i] == 'E') && i + 1 < texto.Length && (texto[i + 1] == '-' || texto[i + 1] == '+') ? 2 : 1;
             }
             return i > inicio && double.TryParse(texto[inicio..i], NumberStyles.Float, CultureInfo.InvariantCulture, out var n) ? n : throw new FormatException();
         }
@@ -357,14 +358,14 @@ public static partial class ClasificadorGrupos
     private static readonly (GrupoMapa Grupo, string[] Claves)[] Reglas =
     [
         (GrupoMapa.Rail, ["rail", "mprop", "fuel pressure", "presión de combustible"]),
-        (GrupoMapa.Turbo, ["turbo", "boost", "ladedruck", "ldr", "wastegate", "vnt", "vgt", "n75", "charge pressure", "sobrealimenta"]),
+        (GrupoMapa.Turbo, ["turbo", "pcr", "boost", "ladedruck", "ldr", "wastegate", "vnt", "vgt", "n75", "charge pressure", "sobrealimenta"]),
         (GrupoMapa.Dpf, ["dpf", "fap", "soot", "russ", "regenera", "partikel", "hollín"]),
         (GrupoMapa.Egr, ["egr", "agr", "exhaust gas recirc"]),
         (GrupoMapa.Avance, ["spark", "ignition", "zünd", "zuend", "timing", "knock", "advance", "avance", "encendido", "picado"]),
         (GrupoMapa.Lambda, ["lambda", "afr", "air/fuel", "air fuel", "o2", "blm", "enrich", "enriquec", "mezcla"]),
         (GrupoMapa.Par, ["torque", "drehmoment", "trq", "=nm", "=par"]),
         (GrupoMapa.Limitadores, ["limit", "begrenz", "=rev", "vmax", "cutoff", "cut-off", "corte"]),
-        (GrupoMapa.Inyeccion, ["inject", "fuel", "smoke", "rauch", "menge", "iq", "inyec", "humo", "soi", "pilot"])
+        (GrupoMapa.Inyeccion, ["inject", "inj", "fuel", "smoke", "rauch", "menge", "iq", "inyec", "humo", "soi", "pilot"])
     ];
 
     [GeneratedRegex(@"[^\p{L}\p{N}]+")]

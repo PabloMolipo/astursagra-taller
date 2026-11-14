@@ -1,6 +1,6 @@
 import { HttpClient, HttpErrorResponse, HttpEvent, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Observable, from, switchMap } from 'rxjs';
 import {
   Acceso, AccesoCreado, CodigoAveriaDetalle, CodigoAveriaListItem, CodigoLeido, EstadoAsistente, FichaDiagnosis,
   FichaDiagnosisRequest, SesionAsistente, SesionAsistenteItem, Combustible, DocumentacionVehiculo, DocumentoTecnico,
@@ -370,6 +370,16 @@ export class Api {
     const f = new FormData();
     f.append('archivo', archivo);
     return this.http.post<{ titulo: string | null; importados: number; omitidos: number; avisos: string[]; totalAvisos: number }>(`/api/centralitas/${id}/importar-xdf`, f);
+  }
+  /** Sube un A2L comprimido con gzip en el navegador (los A2L pasan de 30 MB y se comprimen unas diez veces). */
+  importarA2l(id: number, archivo: File) {
+    return from(new Response(archivo.stream().pipeThrough(new CompressionStream('gzip'))).blob()).pipe(
+      switchMap(comprimido => {
+        const f = new FormData();
+        f.append('archivo', comprimido, `${archivo.name}.gz`);
+        return this.http.post<{ titulo: string | null; importados: number; omitidos: number; avisos: string[]; totalAvisos: number }>(`/api/centralitas/${id}/importar-a2l`, f);
+      })
+    );
   }
   eliminarMapa(id: number, mapaId: number) {
     return this.http.delete<void>(`/api/centralitas/${id}/mapas/${mapaId}`);
