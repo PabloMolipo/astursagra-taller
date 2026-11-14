@@ -22,6 +22,6 @@ describe('App', () => {
     const fixture = TestBed.createComponent(GestionLayout);
     await fixture.whenStable();
     const links = Array.from((fixture.nativeElement as HTMLElement).querySelectorAll('nav a')).map(a => a.textContent?.trim());
-    expect(links).toEqual(['Tablero', 'Órdenes', 'Clientes', 'Vehículos', 'Diagnóstico', 'Mecánico virtual', 'Contabilidad', 'Usuarios', 'Web']);
+    expect(links).toEqual(['Tablero', 'Órdenes', 'Clientes', 'Vehículos', 'Diagnóstico', 'Centralitas', 'Mecánico virtual', 'Contabilidad', 'Usuarios', 'Web']);
   });
 });

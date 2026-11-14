@@ -205,6 +205,7 @@ import { SiluetaVehiculo } from './silueta-vehiculo';
         } @else {
           <div class="hint">Sin reprogramaciones registradas.</div>
         }
+        <button type="button" class="enlace" (click)="ir('centralitas')">Lecturas y mapas de centralita ↓</button>
       </section>
 
       <!-- Accesos -->

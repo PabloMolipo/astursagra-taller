@@ -14,6 +14,7 @@ public enum TipoVehiculo
     Camion,
     Tractor,
     MaquinariaAgricola,
+    Excavadora,
     Otro
 }
 

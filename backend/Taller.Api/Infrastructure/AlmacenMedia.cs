@@ -99,7 +99,10 @@ public abstract class AlmacenArchivos
         }
     }
 
-    private static TipoArchivo? Detectar(ReadOnlySpan<byte> c) => c switch
+    /// <summary>Tipo del archivo según su firma; null si no es de un tipo conocido.</summary>
+    protected virtual TipoArchivo? Detectar(ReadOnlySpan<byte> c) => DetectarFirma(c);
+
+    protected static TipoArchivo? DetectarFirma(ReadOnlySpan<byte> c) => c switch
     {
         [0xFF, 0xD8, 0xFF, ..] => new(".jpg", "image/jpeg"),
         [0x89, 0x50, 0x4E, 0x47, ..] => new(".png", "image/png"),
@@ -164,4 +167,18 @@ public class AlmacenMultimedia(IConfiguration config, IWebHostEnvironment env) :
     /// <summary>Para dar un mensaje claro si llega una foto HEIC (formato del iPhone que los navegadores no muestran).</summary>
     public static bool EsHeic(ReadOnlySpan<byte> c) => c.Length >= 12 && c[4] == (byte)'f' && c[5] == (byte)'t' && c[6] == (byte)'y' && c[7] == (byte)'p' &&
         ((c[8] == (byte)'h' && c[9] == (byte)'e' && c[10] == (byte)'i') || (c[8] == (byte)'m' && c[9] == (byte)'i' && c[10] == (byte)'f'));
+}
+
+/// <summary>
+/// Lecturas de centralitas (<c>Centralitas:Ruta</c>, por defecto privado/centralitas): binarios en bruto (.bin, .ori…),
+/// que no tienen firma; se rechazan solo los archivos de tipos conocidos (fotos, PDF, vídeos), que serían un error.
+/// </summary>
+public class AlmacenCentralitas(IConfiguration config, IWebHostEnvironment env) : AlmacenArchivos(config["Centralitas:Ruta"] ?? Path.Combine("privado", "centralitas"), env)
+{
+    public const long Maximo = 32L * 1024 * 1024;
+    public static readonly TipoArchivo Binario = new(".bin", "application/octet-stream");
+
+    public override long TamanoMaximo => Maximo;
+    protected override TipoArchivo? Detectar(ReadOnlySpan<byte> c) => DetectarFirma(c) ?? Binario;
+    protected override bool Admite(TipoArchivo tipo) => tipo == Binario;
 }

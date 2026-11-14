@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
 using Taller.Api.Auth;
+using Taller.Api.Centralitas;
 using Taller.Api.Data;
 using Taller.Api.Diagnostico;
 using Taller.Api.Domain;
@@ -71,7 +72,9 @@ builder.Services.AddScoped<GestorAccesos>();
 builder.Services.AddSingleton<AlmacenMedia>();
 builder.Services.AddSingleton<AlmacenPrivado>();
 builder.Services.AddSingleton<AlmacenMultimedia>();
+builder.Services.AddSingleton<AlmacenCentralitas>();
 builder.Services.AddSingleton<ClienteAnthropic>();
+builder.Services.AddScoped<DescriptorMapas>();
 builder.Services.AddScoped<HistorialDiagnostico>();
 builder.Services.AddScoped<DocumentacionTecnica>();
 

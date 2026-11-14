@@ -492,3 +492,8 @@ backend/Taller.Api/geoip/
 
 # Borradores e imágenes de prueba (no forman parte del proyecto)
 ideas/
+
+# Lecturas de centralitas de clientes para entrenar el reconocimiento de mapas (ml/): nunca al repositorio.
+/Centralitas/
+/ml/salida/
+*.bak

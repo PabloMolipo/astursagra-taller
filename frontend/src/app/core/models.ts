@@ -1,5 +1,5 @@
 export type TipoCliente = 'Particular' | 'Empresa';
-export type TipoVehiculo = 'Turismo' | 'Moto' | 'Furgoneta' | 'Camion' | 'Tractor' | 'MaquinariaAgricola' | 'Otro';
+export type TipoVehiculo = 'Turismo' | 'Moto' | 'Furgoneta' | 'Camion' | 'Tractor' | 'MaquinariaAgricola' | 'Excavadora' | 'Otro';
 export type EstadoOrden = 'Recibido' | 'EnDiagnostico' | 'Presupuestado' | 'EnReparacion' | 'Listo' | 'Entregado' | 'Cancelado';
 export type TipoServicio = 'Mecanica' | 'MecanicaMaquinaria' | 'Electromecanica' | 'Programacion' | 'ChapaPintura' | 'Mantenimiento' | 'Diagnosis' | 'Otro';
 export type TipoLinea = 'ManoObra' | 'Pieza';
@@ -901,7 +901,8 @@ export interface ResumenContabilidad {
   gastosPorCategoria: { categoria: CategoriaGasto; importe: number; numero: number }[];
   ingresosPorServicio: { servicio: TipoServicio; importe: number }[];
   mejoresClientes: { clienteId: number; nombre: string; importe: number; ordenes: number }[];
-  meses: { mes: string; facturado: number; cobrado: number; gastos: number }[];
+  /** Costes: coste de compra de las piezas de las órdenes entregadas; gastos: solo los generales (no ligados a una orden). */
+  meses: { mes: string; facturado: number; facturadoCobrado: number; cobrado: number; costes: number; gastos: number }[];
   ordenes: OrdenContable[];
   sinCobrar: OrdenContable[];
   /** Importes de las órdenes con IVA (true) o sin IVA (false). */
@@ -912,4 +913,145 @@ export interface ResumenContabilidad {
   gastosGenerales: number;
   /** Cobrado − coste de las piezas − gastos generales. */
   beneficio: number;
+}
+
+// Centralitas
+export type TipoCentralita = 'Motor' | 'Cambio' | 'Abs' | 'Luces' | 'Airbag' | 'Confort' | 'Otra';
+export type TipoDatoMapa = 'U8' | 'I8' | 'U16' | 'I16' | 'U32' | 'I32' | 'F32';
+export type OrigenMapa = 'Detectado' | 'Manual';
+export type GrupoMapa = 'Inyeccion' | 'Turbo' | 'Rail' | 'Par' | 'Limitadores' | 'Avance' | 'Egr' | 'Dpf' | 'Lambda' | 'Otros';
+
+export interface CentralitaListItem {
+  id: number;
+  tipo: TipoCentralita;
+  nombre: string;
+  nombreArchivo: string;
+  tamano: number;
+  familia: string | null;
+  hardware: string | null;
+  software: string | null;
+  referencia: string | null;
+  vehiculoId: number | null;
+  vehiculo: string | null;
+  matricula: string | null;
+  mapas: number;
+  fechaAlta: string;
+  /** Mapas con nombre (creados o editados a mano). */
+  mapasConNombre: number;
+}
+
+/** Valor físico = bruto × factor + desplazamiento. Filas = 1 en las curvas; los ejes sin dirección se numeran 0, 1, 2… */
+export interface MapaCentralita {
+  id: number;
+  nombre: string;
+  origen: OrigenMapa;
+  grupo: GrupoMapa | null;
+  direccion: number;
+  columnas: number;
+  filas: number;
+  tipoDato: TipoDatoMapa;
+  bigEndian: boolean;
+  /** Valores guardados por columnas (cada punto del eje X con todos los de Y seguidos). */
+  porColumnas: boolean;
+  factor: number;
+  desplazamiento: number;
+  unidad: string | null;
+  ejeXDireccion: number | null;
+  ejeXTipo: TipoDatoMapa;
+  ejeXFactor: number;
+  ejeXUnidad: string | null;
+  ejeYDireccion: number | null;
+  ejeYTipo: TipoDatoMapa;
+  ejeYFactor: number;
+  ejeYUnidad: string | null;
+  notas: string | null;
+  ejeXDesplazamiento: number;
+  /** Valores fijos del eje («;» entre ellos) cuando no está en el binario (p. ej. de un XDF). */
+  ejeXValores: string | null;
+  ejeYDesplazamiento: number;
+  ejeYValores: string | null;
+}
+
+export type MapaRequest = Omit<MapaCentralita, 'id' | 'origen'>;
+
+/** Mapa ya leído (valores convertidos, null fuera del archivo) que se envía para describirlo con IA. */
+export interface DescribirMapaRequest {
+  nombre: string;
+  grupo: GrupoMapa | null;
+  unidad: string | null;
+  detectado: boolean;
+  ejeX: (number | null)[];
+  ejeXUnidad: string | null;
+  ejeY: (number | null)[];
+  ejeYUnidad: string | null;
+  valores: (number | null)[][];
+  /** El mismo mapa en la lectura con la que se compara: la original si otraEsOriginal, si no la modificada. */
+  valoresOtra: (number | null)[][] | null;
+  otraEsOriginal: boolean;
+  sugerencia: string | null;
+}
+
+export interface DescripcionMapa {
+  texto: string;
+  modelo: string;
+}
+
+export interface CentralitaDetalle extends Omit<CentralitaListItem, 'mapas' | 'mapasConNombre'> {
+  sha256: string;
+  notas: string | null;
+  mapas: MapaCentralita[];
+  /** Software (o referencia) y tamaño con los que se guardan los nombres; null si no se pueden reutilizar. */
+  claveBiblioteca: string | null;
+  mapasBiblioteca: number;
+  bibliotecaId: number | null;
+  /** Otra lectura del mismo tamaño con la que se compara (la modificada o la original). */
+  comparadaConId: number | null;
+  comparadaNombre: string | null;
+}
+
+export interface CadenaBinario {
+  direccion: number;
+  texto: string;
+}
+
+export interface BibliotecaListItem {
+  id: number;
+  clave: string;
+  familia: string | null;
+  software: string | null;
+  referencia: string | null;
+  tamano: number;
+  mapas: number;
+  importaciones: number;
+  lecturas: number;
+  modificada: string;
+}
+
+export interface ImportacionXdf {
+  id: number;
+  titulo: string | null;
+  nombreArchivo: string;
+  tamano: number;
+  importados: number;
+  omitidos: number;
+  avisos: string[];
+  centralitaId: number | null;
+  fecha: string;
+}
+
+export interface LecturaBiblioteca {
+  id: number;
+  tipo: TipoCentralita;
+  nombre: string;
+  nombreArchivo: string;
+  vehiculo: string | null;
+  matricula: string | null;
+  fechaAlta: string;
+}
+
+export interface BibliotecaDetalle extends Omit<BibliotecaListItem, 'mapas' | 'importaciones' | 'lecturas'> {
+  fechaAlta: string;
+  mapas: MapaCentralita[];
+  importaciones: ImportacionXdf[];
+  lecturas: LecturaBiblioteca[];
 }

@@ -3,6 +3,7 @@ import { Component, computed, inject, input, numberAttribute, OnInit, signal } f
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
+import { LecturasVehiculo } from '../centralitas/lecturas-vehiculo';
 import { Api, limpiar, mensajeError } from '../core/api';
 import { COLORES_VEHICULO, opciones, TIPOS_VEHICULO, usaHoras } from '../core/etiquetas';
 import { ClienteListItem, ConsultaMatricula, TipoVehiculo, VehiculoDetalle, VehiculoRequest, VehiculoResumen } from '../core/models';
@@ -14,7 +15,7 @@ import { Vehiculo360 } from './vehiculo-360';
 
 @Component({
   selector: 'app-vehiculo-form',
-  imports: [ReactiveFormsModule, RouterLink, DatePipe, CurrencyPipe, EtiquetaPipe, IdentificacionPipe, NumOrdenPipe, EstadoBadge, DocumentacionVehiculoComponent, ReproVehiculo, Vehiculo360],
+  imports: [ReactiveFormsModule, RouterLink, DatePipe, CurrencyPipe, EtiquetaPipe, IdentificacionPipe, NumOrdenPipe, EstadoBadge, DocumentacionVehiculoComponent, LecturasVehiculo, ReproVehiculo, Vehiculo360],
   template: `
     <div class="page-header">
       <div>
@@ -189,6 +190,7 @@ import { Vehiculo360 } from './vehiculo-360';
 
     @if (vehiculo(); as v) {
       <div id="documentacion" class="ancla"><app-documentacion-vehiculo [vehiculoId]="v.id" [vehiculo]="v" /></div>
+      <div id="centralitas" class="ancla"><app-lecturas-vehiculo [vehiculoId]="v.id" /></div>
       <div id="repro" class="ancla"><app-repro-vehiculo [vehiculoId]="v.id" /></div>
 
       <section class="card ancla" id="historial">

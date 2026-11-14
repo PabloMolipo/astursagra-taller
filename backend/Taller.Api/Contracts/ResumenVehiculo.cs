@@ -25,10 +25,10 @@ public static class ResumenVehiculo
         return new DatosTecnicosVehiculo(d.Variante ?? d.Descripcion, d.Combustible, d.Cilindrada, d.PotenciaCv, d.FechaMatriculacion, consulta.Fecha);
     }
 
-    /// <summary>Lecturas de kilómetros (u horas, en tractores y maquinaria) de cada visita y el uso anual estimado.</summary>
+    /// <summary>Lecturas de kilómetros (u horas, en tractores, maquinaria y excavadoras) de cada visita y el uso anual estimado.</summary>
     public static UsoResumen Uso(Vehiculo v, IReadOnlyList<OrdenTrabajo> ordenes)
     {
-        var horas = v.Tipo is TipoVehiculo.Tractor or TipoVehiculo.MaquinariaAgricola;
+        var horas = v.Tipo is TipoVehiculo.Tractor or TipoVehiculo.MaquinariaAgricola or TipoVehiculo.Excavadora;
         var puntos = ordenes
             .Select(o => (o.FechaEntrada, Valor: horas ? o.HorasEntrada : o.KilometrosEntrada))
             .Where(p => p.Valor is > 0)

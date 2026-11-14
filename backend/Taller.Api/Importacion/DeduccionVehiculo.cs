@@ -194,6 +194,10 @@ public static partial class DeduccionVehiculo
         {
             tipo = TipoVehiculo.Moto;
         }
+        if (claves.Contains("excavadora") || claves.Contains("retroexcavadora") || claves.Contains("miniexcavadora"))
+        {
+            tipo = TipoVehiculo.Excavadora;
+        }
         if (claves.Contains("remolque"))
         {
             tipo = TipoVehiculo.Otro;

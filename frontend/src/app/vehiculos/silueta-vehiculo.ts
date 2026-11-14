@@ -1,7 +1,7 @@
 import { Component, computed, input } from '@angular/core';
 import { TipoVehiculo } from '../core/models';
 
-type Forma = 'turismo' | 'furgoneta' | 'moto' | 'camion' | 'tractor';
+type Forma = 'turismo' | 'furgoneta' | 'moto' | 'camion' | 'tractor' | 'excavadora';
 
 const FORMAS: Record<TipoVehiculo, Forma> = {
   Turismo: 'turismo',
@@ -10,6 +10,7 @@ const FORMAS: Record<TipoVehiculo, Forma> = {
   Camion: 'camion',
   Tractor: 'tractor',
   MaquinariaAgricola: 'tractor',
+  Excavadora: 'excavadora',
   Otro: 'turismo'
 };
 
@@ -48,6 +49,16 @@ const FORMAS: Record<TipoVehiculo, Forma> = {
             <path d="M226 64 L226 40 L234 40 L234 66" stroke-width="1.6" />
             <circle cx="128" cy="104" r="48" fill="#0a0a0a" /><circle cx="128" cy="104" r="22" fill="none" stroke-width="1.2" opacity="0.6" />
             <circle cx="334" cy="122" r="28" fill="#0a0a0a" /><circle cx="334" cy="122" r="12" fill="none" stroke-width="1.2" opacity="0.6" />
+          }
+          @case ('excavadora') {
+            <path d="M40 112 Q24 112 24 126 Q24 140 40 140 L250 140 Q266 140 266 126 Q266 112 250 112 Z" fill="#0a0a0a" />
+            <circle cx="52" cy="126" r="8" fill="none" stroke-width="1.2" opacity="0.6" /><circle cx="238" cy="126" r="8" fill="none" stroke-width="1.2" opacity="0.6" />
+            <path d="M40 112 L40 76 L250 76 L250 112 Z" />
+            <path d="M170 76 L170 30 Q172 22 182 22 L230 22 Q244 24 246 40 L250 76 Z" />
+            <path d="M184 32 L232 32 L238 66 L184 66 Z" fill="#0d0d0d" stroke-width="1.4" />
+            <path d="M246 60 L330 18 L340 30 L258 76 Z" />
+            <path d="M330 18 L392 70 L380 80 L326 34 Z" />
+            <path d="M380 70 Q404 92 386 118 L360 108 Q378 94 368 80 Z" />
           }
           @default {
             <path d="M18 112 L26 86 Q34 74 66 70 L132 64 Q168 34 214 30 L270 30 Q302 32 334 64 L374 72 Q398 78 402 96 L404 112 Z" />

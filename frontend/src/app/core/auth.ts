@@ -83,27 +83,33 @@ function requiereRol(rol?: Rol): CanActivateFn {
 export const soloTaller = requiereRol('Taller');
 export const soloCliente = requiereRol('Cliente');
 
+// inject() solo funciona antes del primer await: después ya no hay contexto de inyección y la navegación falla sin avisar.
+
 /** Área de clientes: el cliente, o el taller en vista previa de un cliente (desde su ficha). */
 export const areaCliente: CanActivateFn = async (route, state) => {
   const auth = inject(Auth);
+  const router = inject(Router);
+  const cliente = soloCliente(route, state) as Promise<boolean | UrlTree>;
   const s = await auth.cargar();
   if (s?.rol === 'Taller') {
-    return vistaClienteId() ? true : inject(Router).parseUrl('/gestion/clientes');
+    return vistaClienteId() ? true : router.parseUrl('/gestion/clientes');
   }
-  return (await soloCliente(route, state)) as boolean | UrlTree;
+  return cliente;
 };
 
 /** Para cambiar la contraseña basta con tener sesión, aunque sea temporal. */
 export const conSesion: CanActivateFn = async (_route, state) => {
+  const router = inject(Router);
   const s = await inject(Auth).cargar();
-  return s ? true : inject(Router).createUrlTree(['/acceso'], { queryParams: { volver: state.url } });
+  return s ? true : router.createUrlTree(['/acceso'], { queryParams: { volver: state.url } });
 };
 
 /** Si ya hay sesión, la página de acceso lleva directamente a su área. */
 export const sinSesion: CanActivateFn = async () => {
   const auth = inject(Auth);
+  const router = inject(Router);
   const s = await auth.cargar();
-  return s ? inject(Router).parseUrl(auth.inicio(s)) : true;
+  return s ? router.parseUrl(auth.inicio(s)) : true;
 };
 
 /**

@@ -44,7 +44,7 @@ gcloud run deploy "$SERVICIO" \
   --add-cloudsql-instances "$INSTANCIA_SQL" \
   --add-volume "name=datos,type=cloud-storage,bucket=$BUCKET" \
   --add-volume-mount "volume=datos,mount-path=/datos" \
-  --set-env-vars "BaseDatos__MigrarAlArrancar=true,Media__Ruta=/datos/media,Privado__Ruta=/datos/privado,Multimedia__Ruta=/datos/privado/multimedia,DataProtection__Ruta=/datos/claves,GeoIp__Ruta=/datos/geoip/dbip-city-lite.mmdb,Kestrel__EndpointDefaults__Protocols=Http2,Logging__LogLevel__Microsoft.EntityFrameworkCore.Database.Command=Warning,SharePoint__SiteUrl=https://palvarez.sharepoint.com/sites/Taller,SharePoint__BibliotecaRepro=REPRO,SharePoint__Automatica=false" \
+  --set-env-vars "BaseDatos__MigrarAlArrancar=true,Media__Ruta=/datos/media,Privado__Ruta=/datos/privado,Multimedia__Ruta=/datos/privado/multimedia,Centralitas__Ruta=/datos/privado/centralitas,DataProtection__Ruta=/datos/claves,GeoIp__Ruta=/datos/geoip/dbip-city-lite.mmdb,Kestrel__EndpointDefaults__Protocols=Http2,Logging__LogLevel__Microsoft.EntityFrameworkCore.Database.Command=Warning,SharePoint__SiteUrl=https://palvarez.sharepoint.com/sites/Taller,SharePoint__BibliotecaRepro=REPRO,SharePoint__Automatica=false" \
   --set-secrets "$SECRETOS" \
   --use-http2 \
   --allow-unauthenticated \

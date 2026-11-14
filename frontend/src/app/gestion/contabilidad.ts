@@ -51,7 +51,10 @@ function leerConIva() {
 const MESES = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
 /** Colores de las series del gráfico mensual (validados para el fondo oscuro del portal). */
 const COLOR_FACTURADO = '#729f00';
+/** Parte de lo facturado aún sin cobrar: el mismo verde, más claro. */
+const COLOR_PENDIENTE = '#c9ec74';
 const COLOR_GASTOS = '#3b82e6';
+const COLOR_COSTES = '#e0861f';
 
 @Component({
   selector: 'app-contabilidad-resumen',
@@ -130,20 +133,23 @@ const COLOR_GASTOS = '#3b82e6';
         <div class="cabecera-grafico">
           <h2>Últimos 12 meses <span class="modo">{{ etiquetaIva() }}</span></h2>
           <div class="leyenda">
-            <span><i [style.background]="colorFacturado"></i>Facturado</span>
-            <span><i [style.background]="colorGastos"></i>Gastos</span>
+            <span><i [style.background]="colorFacturado"></i>Facturado cobrado</span>
+            <span><i [style.background]="colorPendiente"></i>Facturado pendiente</span>
+            <span><i [style.background]="colorCostes"></i>Costes de reparación</span>
+            <span><i [style.background]="colorGastos"></i>Gastos generales</span>
             <button type="button" class="btn small" (click)="verTabla.set(!verTabla())">{{ verTabla() ? 'Ver gráfico' : 'Ver tabla' }}</button>
           </div>
         </div>
         @if (!verTabla()) {
           <p class="lectura" aria-live="polite">
             @if (mesActivo(); as m) {
-              <strong>{{ m.etiqueta }}</strong> · Facturado {{ m.facturado | currency: 'EUR' }} · Cobrado {{ m.cobrado | currency: 'EUR' }} · Gastos {{ m.gastos | currency: 'EUR' }}
+              <strong>{{ m.etiqueta }}</strong> · Facturado {{ m.facturado | currency: 'EUR' }} (cobrado {{ m.facturadoCobrado | currency: 'EUR' }}, pendiente {{ m.facturado - m.facturadoCobrado | currency: 'EUR' }}) · Cobrado en el mes {{ m.cobrado | currency: 'EUR' }} · Costes {{ m.costes | currency: 'EUR' }} · Gastos generales {{ m.gastos | currency: 'EUR' }}
+              · <span [class.negativo]="m.facturado - m.costes - m.gastos < 0">Resultado {{ m.facturado - m.costes - m.gastos | currency: 'EUR' }}</span>
             } @else {
               <span class="hint">Pasa el ratón (o toca) sobre un mes para ver sus importes.</span>
             }
           </p>
-          <svg class="barras" [attr.viewBox]="'0 0 ' + grafico().ancho + ' ' + grafico().alto" role="img" aria-label="Facturado y gastos por mes">
+          <svg class="barras" [attr.viewBox]="'0 0 ' + grafico().ancho + ' ' + grafico().alto" role="img" aria-label="Facturado, costes de reparación y gastos generales por mes">
             @for (t of grafico().marcas; track t.y) {
               <line [attr.x1]="40" [attr.x2]="grafico().ancho" [attr.y1]="t.y" [attr.y2]="t.y" class="rejilla" />
               <text x="34" [attr.y]="t.y + 4" class="eje" text-anchor="end">{{ t.texto }}</text>
@@ -151,7 +157,9 @@ const COLOR_GASTOS = '#3b82e6';
             @for (b of grafico().barras; track b.i) {
               <g (mouseenter)="activo.set(b.i)" (mouseleave)="activo.set(null)" (click)="activo.set(b.i)" [class.atenuada]="activo() !== null && activo() !== b.i">
                 <rect [attr.x]="b.x - 4" y="0" [attr.width]="b.anchoGrupo + 8" [attr.height]="grafico().alto - 22" class="zona" />
-                <path [attr.d]="b.fact" [attr.fill]="colorFacturado" />
+                <path [attr.d]="b.fact" [attr.fill]="colorPendiente" />
+                <path [attr.d]="b.factCobrado" [attr.fill]="colorFacturado" />
+                <path [attr.d]="b.cost" [attr.fill]="colorCostes" />
                 <path [attr.d]="b.gast" [attr.fill]="colorGastos" />
                 <text [attr.x]="b.x + b.anchoGrupo / 2" [attr.y]="grafico().alto - 6" class="eje" text-anchor="middle">{{ b.etiqueta }}</text>
               </g>
@@ -160,14 +168,17 @@ const COLOR_GASTOS = '#3b82e6';
         } @else {
           <div class="table-wrap">
             <table>
-              <thead><tr><th>Mes</th><th class="num">Facturado</th><th class="num">Cobrado</th><th class="num">Gastos</th></tr></thead>
+              <thead><tr><th>Mes</th><th class="num">Facturado</th><th class="num">De ello cobrado</th><th class="num">Cobrado en el mes</th><th class="num">Costes de reparación</th><th class="num">Gastos generales</th><th class="num">Resultado</th></tr></thead>
               <tbody>
                 @for (m of r.meses; track m.mes) {
                   <tr>
                     <td>{{ m.mes | date: 'MMMM yyyy' }}</td>
                     <td class="num">{{ m.facturado | currency: 'EUR' }}</td>
+                    <td class="num">{{ m.facturadoCobrado | currency: 'EUR' }}</td>
                     <td class="num">{{ m.cobrado | currency: 'EUR' }}</td>
+                    <td class="num">{{ m.costes | currency: 'EUR' }}</td>
                     <td class="num">{{ m.gastos | currency: 'EUR' }}</td>
+                    <td class="num" [class.negativo]="m.facturado - m.costes - m.gastos < 0">{{ m.facturado - m.costes - m.gastos | currency: 'EUR' }}</td>
                   </tr>
                 }
               </tbody>
@@ -312,6 +323,7 @@ const COLOR_GASTOS = '#3b82e6';
     .kpi .hint { font-size: 0.78rem; }
     .kpi.aviso { border-left-color: #ffb020; }
     .kpi.negativo { border-left-color: #ff5c5c; }
+    .lectura .negativo, td.negativo { color: #ff5c5c; }
     .lima { color: var(--primary); } .rojo { color: #ff6b6b; } .ambar { color: #ffc24d; }
     .cabecera-grafico { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 0.5rem; }
     .cabecera-grafico h2 { margin: 0; }
@@ -354,6 +366,8 @@ export class ContabilidadResumen {
   protected readonly servicios = TIPOS_SERVICIO;
   protected readonly colorFacturado = COLOR_FACTURADO;
   protected readonly colorGastos = COLOR_GASTOS;
+  protected readonly colorPendiente = COLOR_PENDIENTE;
+  protected readonly colorCostes = COLOR_COSTES;
 
   protected readonly periodo = signal<Periodo>('mes');
   /** Importes de las órdenes con o sin IVA; se recuerda en este navegador. */
@@ -374,29 +388,37 @@ export class ContabilidadResumen {
   protected readonly maxCategoria = computed(() => Math.max(1, ...(this.r()?.gastosPorCategoria ?? []).map(g => g.importe)));
   protected readonly maxServicio = computed(() => Math.max(1, ...(this.r()?.ingresosPorServicio ?? []).map(s => s.importe)));
 
-  /** Barras agrupadas por mes (facturado y gastos), con las puntas redondeadas y un hueco de 2 px entre ellas. */
+  /** Barras agrupadas por mes (facturado, costes y gastos), con las puntas redondeadas y un hueco de 2 px entre ellas. */
   protected readonly grafico = computed(() => {
     const meses = this.r()?.meses ?? [];
     const ancho = 760, alto = 230, izq = 44, abajo = 22, arriba = 8;
-    const maximo = Math.max(1, ...meses.flatMap(m => [m.facturado, m.gastos]));
+    const maximo = Math.max(1, ...meses.flatMap(m => [m.facturado, m.costes, m.gastos]));
     const paso = this.redondear(maximo / 4);
     const tope = paso * 4;
     const h = alto - abajo - arriba;
     const y = (v: number) => arriba + h - (v / tope) * h;
     const grupo = (ancho - izq) / Math.max(1, meses.length);
-    const barra = Math.min(18, (grupo - 14) / 2);
+    const barra = Math.min(14, (grupo - 16) / 3);
     const pathBarra = (x: number, v: number) => {
       if (v <= 0) return '';
       const top = y(v), base = y(0), r = Math.min(4, (base - top) / 2, barra / 2);
       return `M${x},${base} V${top + r} Q${x},${top} ${x + r},${top} H${x + barra - r} Q${x + barra},${top} ${x + barra},${top + r} V${base} Z`;
     };
+    // Parte cobrada de lo facturado: desde la base, con la punta recta salvo que esté todo cobrado (entonces tapa la barra entera).
+    const pathCobrado = (x: number, v: number, total: number) => {
+      if (v <= 0) return '';
+      if (v >= total) return pathBarra(x, total);
+      return `M${x},${y(0)} V${y(v)} H${x + barra} V${y(0)} Z`;
+    };
     const barras = meses.map((m, i) => {
-      const x = izq + i * grupo + (grupo - (barra * 2 + 2)) / 2;
+      const x = izq + i * grupo + (grupo - (barra * 3 + 4)) / 2;
       const f = new Date(m.mes + 'T00:00:00');
       return {
-        i, x, anchoGrupo: barra * 2 + 2,
+        i, x, anchoGrupo: barra * 3 + 4,
         fact: pathBarra(x, m.facturado),
-        gast: pathBarra(x + barra + 2, m.gastos),
+        factCobrado: pathCobrado(x, m.facturadoCobrado, m.facturado),
+        cost: pathBarra(x + barra + 2, m.costes),
+        gast: pathBarra(x + (barra + 2) * 2, m.gastos),
         etiqueta: MESES[f.getMonth()] + (f.getMonth() === 0 ? ` ${String(f.getFullYear()).slice(2)}` : '')
       };
     });

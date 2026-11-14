@@ -3,13 +3,22 @@ import { Component, computed, inject, input, OnInit, signal } from '@angular/cor
 import { RouterLink } from '@angular/router';
 import { Api } from '../core/api';
 import { opciones, TIPOS_SERVICIO } from '../core/etiquetas';
-import { InicioPublico, Servicio, TipoServicio, TrabajoDetalle, TrabajoListItem } from '../core/models';
+import { InicioPublico, Servicio, TipoServicio, TipoVehiculo, TrabajoDetalle, TrabajoListItem } from '../core/models';
 import { EtiquetaPipe } from '../shared/pipes';
 import { DatosPublicos } from './datos-publicos';
 import { IconoServicio } from './icono-servicio';
 
 const ICONO_WHATSAPP = 'M3 21l1.6-4.7A8.5 8.5 0 1 1 8 19.6z M9 8.5c0 3.5 3 6.5 6.5 6.5l1-1.6-2-1-1 .9a5 5 0 0 1-2.8-2.8l.9-1-1-2z';
 const ICONO_TELEFONO = 'M5 3h4l2 5-2.5 1.5a11 11 0 0 0 6 6L16 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 5a2 2 0 0 1 2-2';
+
+/** Grupos de vehículo por los que se filtran los trabajos en la web; los trabajos sin tipo u «Otro» solo salen en «Todos». */
+const GRUPOS_VEHICULO: { valor: string; etiqueta: string; tipos: TipoVehiculo[] }[] = [
+  { valor: 'coches', etiqueta: 'Coches', tipos: ['Turismo', 'Furgoneta'] },
+  { valor: 'motos', etiqueta: 'Motos', tipos: ['Moto'] },
+  { valor: 'camiones', etiqueta: 'Camiones', tipos: ['Camion'] },
+  { valor: 'tractores', etiqueta: 'Tractores', tipos: ['Tractor', 'MaquinariaAgricola'] },
+  { valor: 'excavadoras', etiqueta: 'Excavadoras', tipos: ['Excavadora'] }
+];
 
 /** Tarjeta de un trabajo realizado (portada y listado). */
 @Component({
@@ -230,9 +239,17 @@ export class ServiciosPublicos {
 
     <section class="pub-seccion" style="padding-top: 2.5rem">
       <div class="pub-contenedor">
+        @if (gruposConTrabajos().length > 1) {
+          <div class="pub-filtros" role="group" aria-label="Tipo de vehículo">
+            <button type="button" [class.activo]="grupo() === ''" (click)="grupo.set('')">Todos los vehículos</button>
+            @for (g of gruposConTrabajos(); track g.valor) {
+              <button type="button" [class.activo]="grupo() === g.valor" (click)="grupo.set(g.valor)">{{ g.etiqueta }}</button>
+            }
+          </div>
+        }
         @if (serviciosConTrabajos().length > 1) {
-          <div class="pub-filtros">
-            <button type="button" [class.activo]="filtro() === ''" (click)="filtro.set('')">Todos</button>
+          <div class="pub-filtros" role="group" aria-label="Servicio">
+            <button type="button" [class.activo]="filtro() === ''" (click)="filtro.set('')">Todos los servicios</button>
             @for (s of serviciosConTrabajos(); track s.valor) {
               <button type="button" [class.activo]="filtro() === s.valor" (click)="filtro.set(s.valor)">{{ s.etiqueta }}</button>
             }
@@ -244,16 +261,23 @@ export class ServiciosPublicos {
           }
         </div>
         @if (!filtrados().length) {
-          <p class="pub-vacio">{{ cargando() ? 'Cargando…' : 'Muy pronto publicaremos aquí nuestros trabajos.' }}</p>
+          <p class="pub-vacio">{{ cargando() ? 'Cargando…' : trabajos().length ? 'No hay trabajos con estos filtros.' : 'Muy pronto publicaremos aquí nuestros trabajos.' }}</p>
         }
       </div>
     </section>
   `
 })
 export class TrabajosPublicos {
-  private readonly trabajos = signal<TrabajoListItem[]>([]);
+  protected readonly trabajos = signal<TrabajoListItem[]>([]);
   protected readonly cargando = signal(true);
   protected readonly filtro = signal<TipoServicio | ''>('');
+  protected readonly grupo = signal('');
+
+  /** Solo se ofrecen como filtro los grupos de vehículo que tienen algún trabajo. */
+  protected readonly gruposConTrabajos = computed(() => {
+    const usados = new Set(this.trabajos().map(t => t.tipoVehiculo));
+    return GRUPOS_VEHICULO.filter(g => g.tipos.some(tipo => usados.has(tipo)));
+  });
 
   /** Solo se ofrecen como filtro los servicios que tienen algún trabajo. */
   protected readonly serviciosConTrabajos = computed(() => {
@@ -262,7 +286,10 @@ export class TrabajosPublicos {
   });
   protected readonly filtrados = computed(() => {
     const f = this.filtro();
-    return f ? this.trabajos().filter(t => t.servicios.includes(f)) : this.trabajos();
+    const tipos = GRUPOS_VEHICULO.find(g => g.valor === this.grupo())?.tipos;
+    return this.trabajos().filter(
+      t => (!f || t.servicios.includes(f)) && (!tipos || (t.tipoVehiculo !== null && tipos.includes(t.tipoVehiculo)))
+    );
   });
 
   constructor() {

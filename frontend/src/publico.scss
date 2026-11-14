@@ -617,6 +617,11 @@ app-publico-layout {
   }
 }
 
+/* Dos filas de filtros (tipo de vehículo y servicio): más juntas entre sí. */
+.pub-filtros:has(+ .pub-filtros) {
+  margin-bottom: 0.75rem;
+}
+
 /* Galería */
 .pub-galeria {
   .principal {

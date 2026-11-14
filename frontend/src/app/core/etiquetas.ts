@@ -12,6 +12,7 @@ export const TIPOS_VEHICULO: Record<TipoVehiculo, string> = {
   Camion: 'Camión',
   Tractor: 'Tractor',
   MaquinariaAgricola: 'Maquinaria agrícola',
+  Excavadora: 'Excavadora',
   Otro: 'Otro'
 };
 
@@ -103,7 +104,7 @@ export const METODOS_PAGO: Record<MetodoPago, string> = {
 };
 
 export function usaHoras(tipo: TipoVehiculo): boolean {
-  return tipo === 'Tractor' || tipo === 'MaquinariaAgricola';
+  return tipo === 'Tractor' || tipo === 'MaquinariaAgricola' || tipo === 'Excavadora';
 }
 
 export function opciones<T extends string>(etiquetas: Record<T, string>): { valor: T; etiqueta: string }[] {

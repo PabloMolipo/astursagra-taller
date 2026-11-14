@@ -72,6 +72,18 @@ export const routes: Routes = [
         ]
       },
 
+      {
+        path: 'centralitas',
+        loadComponent: () => import('./centralitas/centralitas').then(m => m.Centralitas),
+        children: [
+          { path: '', pathMatch: 'full', redirectTo: 'motor' },
+          { path: 'biblioteca', title: T('Biblioteca de mapas'), loadComponent: () => import('./centralitas/biblioteca').then(m => m.BibliotecaLista) },
+          { path: 'biblioteca/:id', title: T('Biblioteca de un software'), loadComponent: () => import('./centralitas/biblioteca').then(m => m.BibliotecaDetalleComponent) },
+          { path: ':tipo', title: T('Centralitas'), loadComponent: () => import('./centralitas/centralitas').then(m => m.CentralitasLista) },
+          { path: ':tipo/:id', title: T('Lectura de centralita'), loadComponent: () => import('./centralitas/centralita-detalle').then(m => m.CentralitaDetalleComponent) }
+        ]
+      },
+
       { path: 'mecanico', title: T('Mecánico virtual'), loadComponent: () => import('./mecanico/mecanico-virtual').then(m => m.MecanicoVirtual) },
       { path: 'mecanico/:id', title: T('Mecánico virtual'), loadComponent: () => import('./mecanico/mecanico-virtual').then(m => m.MecanicoVirtual) },
       {
@@ -101,6 +113,13 @@ export const routes: Routes = [
     ]
   },
 
+  // Informe de la reparación de una orden (diagnosis, trabajos y fotos), para imprimir o guardar en PDF.
+  {
+    path: 'imprimir/orden/:id/informe',
+    title: T('Informe de reparación'),
+    canActivate: [soloTaller],
+    loadComponent: () => import('./ordenes/informe-reparacion').then(m => m.InformeReparacion)
+  },
   // Presupuesto, proforma o factura de una orden, a página completa para imprimir o guardar en PDF.
   {
     path: 'imprimir/orden/:id/:tipo',

@@ -2,7 +2,8 @@ import { DatePipe } from '@angular/common';
 import { Component, computed, inject, input, numberAttribute, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
+import { map, switchMap } from 'rxjs';
 import { Api, mensajeError } from '../core/api';
 import { pareceModificado, pareceOriginal, tamanoLegible } from '../core/binario';
 import { ArchivoRepro, ReproDetalle, ReproListItem, VehiculoListItem } from '../core/models';
@@ -146,7 +147,11 @@ export class ReproLista implements OnInit {
       <section class="card">
         <div class="page-header" style="margin-bottom: 0.5rem">
           <h2 style="margin: 0">Archivos</h2>
-          <button type="button" class="btn small primary" [disabled]="seleccion().length !== 2" (click)="compararSeleccion()" title="Marca dos archivos binarios">Comparar seleccionados</button>
+          <div class="toolbar" style="margin: 0">
+            <button type="button" class="btn small" [disabled]="seleccion().length !== 2 || pasando()" (click)="compararEnCentralitas()"
+              title="Pasa los dos archivos a Centralitas y los deja comparados (mapas modificados)">⇄ Comparar en Centralitas</button>
+            <button type="button" class="btn small primary" [disabled]="seleccion().length !== 2" (click)="compararSeleccion()" title="Marca dos archivos binarios">Comparar seleccionados</button>
+          </div>
         </div>
         <div class="table-wrap">
           <table>
@@ -173,6 +178,9 @@ export class ReproLista implements OnInit {
                   <td class="num">{{ tamanoLegible(a.tamano) }}</td>
                   <td>{{ a.modificado | date: 'dd/MM/yy HH:mm' }}</td>
                   <td class="num acciones">
+                    @if (a.visor === 'binario') {
+                      <button type="button" class="enlace" (click)="abrirEnCentralitas(a)" [disabled]="pasando()" title="Abrir en Centralitas (identificación y mapas)">→ Centralitas</button>
+                    }
                     <a [href]="url(a, true)" title="Descargar">⬇</a>
                     @if (a.webUrl) {
                       <a [href]="a.webUrl" target="_blank" rel="noopener noreferrer" title="Abrir en SharePoint">↗</a>
@@ -246,7 +254,7 @@ export class ReproLista implements OnInit {
     .enlace { background: none; border: 0; padding: 0; color: var(--primary); cursor: pointer; font: inherit; text-align: left; }
     .etiqueta { font-size: 0.7rem; border-radius: var(--radius); padding: 0 0.45rem; margin-left: 0.4rem; background: var(--success-tint); color: var(--success); }
     .etiqueta.mod { background: var(--warning-tint); color: var(--warning); }
-    .acciones a { margin-left: 0.6rem; text-decoration: none; }
+    .acciones a, .acciones .enlace { margin-left: 0.6rem; text-decoration: none; }
     tr.activa td { background: var(--bg); }
     .pdf { width: 100%; height: 75vh; border: 1px solid var(--border); border-radius: var(--radius); }
     .imagen { max-width: 100%; max-height: 75vh; display: block; border-radius: var(--radius); }
@@ -256,6 +264,7 @@ export class ReproLista implements OnInit {
 export class ReproDetalleComponent implements OnInit {
   private readonly api = inject(Api);
   private readonly sanitizer = inject(DomSanitizer);
+  private readonly router = inject(Router);
   readonly id = input.required({ transform: numberAttribute });
 
   protected readonly ICONOS = ICONOS;
@@ -270,6 +279,8 @@ export class ReproDetalleComponent implements OnInit {
   protected readonly seleccion = signal<number[]>([]);
   protected readonly comparando = signal<[ArchivoComparado, ArchivoComparado] | null>(null);
   protected readonly buscando = signal(false);
+  /** Pasando archivos a Centralitas (se copian de SharePoint en el servidor). */
+  protected readonly pasando = signal(false);
   protected readonly vehiculos = signal<VehiculoListItem[]>([]);
   protected qVehiculo = '';
   protected notas = '';
@@ -320,6 +331,37 @@ export class ReproDetalleComponent implements OnInit {
 
   protected intercambiar() {
     this.comparando.update(p => (p ? [p[1], p[0]] : p));
+  }
+
+  /** Pasa el archivo a Centralitas (si ya estaba, abre esa lectura). */
+  protected abrirEnCentralitas(a: ArchivoRepro) {
+    this.pasando.set(true);
+    this.api.centralitaDesdeRepro(a.id).subscribe({
+      next: c => this.router.navigate(['/gestion/centralitas', 'motor', c.id]),
+      error: e => {
+        this.pasando.set(false);
+        this.error.set(mensajeError(e));
+      }
+    });
+  }
+
+  /** Pasa los dos archivos marcados a Centralitas, los deja comparados entre sí y abre el que parezca original. */
+  protected compararEnCentralitas() {
+    const archivos = (this.r()?.archivos ?? []).filter(a => this.seleccion().includes(a.id));
+    if (archivos.length !== 2) return;
+    let [ori, mod] = archivos;
+    if (pareceOriginal(mod.nombre) || pareceModificado(ori.nombre)) [ori, mod] = [mod, ori];
+    this.pasando.set(true);
+    this.api.centralitaDesdeRepro(ori.id).pipe(
+      switchMap(a => this.api.centralitaDesdeRepro(mod.id).pipe(map(b => [a, b] as const))),
+      switchMap(([a, b]) => this.api.compararCentralita(b.id, a.id).pipe(switchMap(() => this.api.compararCentralita(a.id, b.id))))
+    ).subscribe({
+      next: a => this.router.navigate(['/gestion/centralitas', 'motor', a.id]),
+      error: e => {
+        this.pasando.set(false);
+        this.error.set(mensajeError(e));
+      }
+    });
   }
 
   protected buscarVehiculo(q: string) {

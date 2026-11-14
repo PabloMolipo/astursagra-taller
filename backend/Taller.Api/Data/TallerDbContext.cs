@@ -35,6 +35,11 @@ public class TallerDbContext(DbContextOptions<TallerDbContext> options) : Identi
     public DbSet<Reprogramacion> Reprogramaciones => Set<Reprogramacion>();
     public DbSet<Gasto> Gastos => Set<Gasto>();
     public DbSet<Factura> Facturas => Set<Factura>();
+    public DbSet<Centralita> Centralitas => Set<Centralita>();
+    public DbSet<MapaCentralita> MapasCentralita => Set<MapaCentralita>();
+    public DbSet<BibliotecaSoftware> BibliotecasSoftware => Set<BibliotecaSoftware>();
+    public DbSet<MapaBiblioteca> MapasBiblioteca => Set<MapaBiblioteca>();
+    public DbSet<ImportacionXdf> ImportacionesXdf => Set<ImportacionXdf>();
     public DbSet<Visita> Visitas => Set<Visita>();
     public DbSet<ArchivoReprogramacion> ArchivosReprogramacion => Set<ArchivoReprogramacion>();
     public DbSet<CarpetaSharePoint> CarpetasSharePoint => Set<CarpetaSharePoint>();

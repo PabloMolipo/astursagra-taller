@@ -7,8 +7,10 @@ import {
   DocumentoTecnicoRequest, EnlacePortal, CatalogoDespiece, CatalogoDespieceRequest, EnlaceReferencia, ConsultaMatricula, ConversacionMecanico, ConversacionMecanicoDetalle, ReproDetalle, ReproListItem, TipoDocumento, EstadoSharePoint, EtapaMultimedia, MultimediaOrden, ValorReferencia, ValorReferenciaRequest, ClienteDetalle, ClienteListItem, ClienteRequest, DatosTaller, EstadoOrden, InicioPublico,
   LineaRequest, OrdenActualizarRequest, OrdenCrearRequest, OrdenDetalle, OrdenListItem, PortalOrdenDetalle,
   PortalVehiculo, PortalVehiculoDetalle, Servicio, ServicioRequest, TipoServicio, TrabajoDetalle, TrabajoListItem,
-  TrabajoRequest, UsuarioAcceso, VehiculoDetalle, VehiculoListItem, VehiculoRequest, VehiculoResumen, ImagenVehiculo, PortalVehiculoResumen, ResumenContabilidad, Gasto, GastoRequest, CategoriaGasto, AjustesContabilidad, Factura
+  TrabajoRequest, UsuarioAcceso, VehiculoDetalle, VehiculoListItem, VehiculoRequest, VehiculoResumen, ImagenVehiculo, PortalVehiculoResumen, ResumenContabilidad, Gasto, GastoRequest, CategoriaGasto, AjustesContabilidad, Factura,
+  BibliotecaDetalle, BibliotecaListItem, CadenaBinario, CentralitaDetalle, CentralitaListItem, DescribirMapaRequest, DescripcionMapa, MapaCentralita, MapaRequest, TipoCentralita
 } from './models';
+import { ModeloMapas } from './reconocimiento';
 
 type Filtros = Record<string, string | number | boolean | null | undefined>;
 
@@ -307,6 +309,90 @@ export class Api {
   }
   notasReprogramacion(id: number, notas: string | null) {
     return this.http.put<void>(`/api/repro/${id}/notas`, { notas });
+  }
+
+  // Centralitas (lecturas de motor, cambio, ABS…). El binario se pide a /api/centralitas/{id}/contenido.
+  centralitas(filtro: { tipo?: TipoCentralita; q?: string; vehiculoId?: number } = {}) {
+    return this.http.get<CentralitaListItem[]>('/api/centralitas', { params: params(filtro) });
+  }
+  centralita(id: number) {
+    return this.http.get<CentralitaDetalle>(`/api/centralitas/${id}`);
+  }
+  /** Devuelve los eventos de la subida para poder mostrar el progreso (el análisis tarda unos segundos al final). */
+  subirCentralita(archivo: File, tipo: TipoCentralita, vehiculoId: number | null): Observable<HttpEvent<CentralitaDetalle>> {
+    const f = new FormData();
+    f.append('archivo', archivo);
+    f.append('tipo', tipo);
+    if (vehiculoId) f.append('vehiculoId', String(vehiculoId));
+    return this.http.post<CentralitaDetalle>('/api/centralitas', f, { reportProgress: true, observe: 'events' });
+  }
+  actualizarCentralita(id: number, req: { tipo: TipoCentralita; nombre: string; vehiculoId: number | null; notas: string | null; familia: string | null; hardware: string | null; software: string | null; referencia: string | null }) {
+    return this.http.put<CentralitaDetalle>(`/api/centralitas/${id}`, req);
+  }
+  eliminarCentralita(id: number) {
+    return this.http.delete<void>(`/api/centralitas/${id}`);
+  }
+  binarioCentralita(id: number) {
+    return this.http.get(`/api/centralitas/${id}/contenido`, { responseType: 'arraybuffer' });
+  }
+  cadenasCentralita(id: number) {
+    return this.http.get<CadenaBinario[]>(`/api/centralitas/${id}/cadenas`);
+  }
+  reanalizarCentralita(id: number) {
+    return this.http.post<CentralitaDetalle>(`/api/centralitas/${id}/reanalizar`, {});
+  }
+  crearMapa(id: number, req: MapaRequest) {
+    return this.http.post<MapaCentralita>(`/api/centralitas/${id}/mapas`, req);
+  }
+  actualizarMapa(id: number, mapaId: number, req: MapaRequest) {
+    return this.http.put<MapaCentralita>(`/api/centralitas/${id}/mapas/${mapaId}`, req);
+  }
+  /** Descripción del mapa con IA (Claude), a partir de los valores que se están viendo. */
+  describirMapa(id: number, req: DescribirMapaRequest) {
+    return this.http.post<DescripcionMapa>(`/api/centralitas/${id}/describir-mapa`, req);
+  }
+  /** Modelo de reconocimiento de mapas (estático, se entrena aparte: ver ml/README.md). */
+  modeloMapas() {
+    return this.http.get<ModeloMapas>('/modelos/mapas.json');
+  }
+  /** Copia los mapas con nombre de otra lectura (ver la API: con el mismo software se añaden también los que falten). */
+  /** Pasa a lectura un archivo de una reprogramación (REPRO) sin descargarlo; si ya existía, devuelve esa. */
+  centralitaDesdeRepro(archivoId: number, tipo: TipoCentralita = 'Motor') {
+    return this.http.post<CentralitaDetalle>('/api/centralitas/desde-repro', { archivoId, tipo });
+  }
+  compararCentralita(id: number, otraId: number | null) {
+    return this.http.put<CentralitaDetalle>('/api/centralitas/' + id + '/comparada', { otraId });
+  }
+  copiarMapas(id: number, origenId: number) {
+    return this.http.post<{ aplicados: number; anadidos: number; omitidos: number }>(`/api/centralitas/${id}/copiar-mapas`, { origenId });
+  }
+  importarXdf(id: number, archivo: File) {
+    const f = new FormData();
+    f.append('archivo', archivo);
+    return this.http.post<{ titulo: string | null; importados: number; omitidos: number; avisos: string[]; totalAvisos: number }>(`/api/centralitas/${id}/importar-xdf`, f);
+  }
+  eliminarMapa(id: number, mapaId: number) {
+    return this.http.delete<void>(`/api/centralitas/${id}/mapas/${mapaId}`);
+  }
+
+  // Biblioteca de mapas por software. El XDF importado se descarga en /api/centralitas/biblioteca/importaciones/{id}/archivo.
+  bibliotecas(q?: string) {
+    return this.http.get<BibliotecaListItem[]>('/api/centralitas/biblioteca', { params: params({ q }) });
+  }
+  biblioteca(id: number) {
+    return this.http.get<BibliotecaDetalle>('/api/centralitas/biblioteca/' + id);
+  }
+  actualizarMapaBiblioteca(id: number, mapaId: number, req: MapaRequest) {
+    return this.http.put<MapaCentralita>('/api/centralitas/biblioteca/' + id + '/mapas/' + mapaId, req);
+  }
+  eliminarMapaBiblioteca(id: number, mapaId: number) {
+    return this.http.delete<void>('/api/centralitas/biblioteca/' + id + '/mapas/' + mapaId);
+  }
+  aplicarBiblioteca(id: number) {
+    return this.http.post<{ lecturas: number; mapas: number }>('/api/centralitas/biblioteca/' + id + '/aplicar', {});
+  }
+  eliminarBiblioteca(id: number) {
+    return this.http.delete<void>('/api/centralitas/biblioteca/' + id);
   }
 
   // Datos por matrícula (MatriculaAPI)

@@ -32,6 +32,7 @@ import { ServiciosInput } from './servicios-input';
         <div class="toolbar" style="margin: 0">
           <a class="btn" [routerLink]="['/imprimir/orden', o.id, 'presupuesto']" target="_blank" rel="noopener">📄 Presupuesto</a>
           <a class="btn" [routerLink]="['/imprimir/orden', o.id, 'proforma']" target="_blank" rel="noopener">📄 Proforma</a>
+          <a class="btn" [routerLink]="['/imprimir/orden', o.id, 'informe']" target="_blank" rel="noopener" title="Informe de la reparación con la diagnosis, los trabajos y las fotos, para imprimir o guardar en PDF">📋 Informe</a>
           @if (o.factura; as f) {
             <a class="btn primary" [routerLink]="['/imprimir/orden', o.id, 'factura']" target="_blank" rel="noopener" title="Emitida el {{ f.fecha | date: 'dd/MM/yyyy' }}">🧾 Factura {{ f.codigo }}</a>
             <button type="button" class="btn" (click)="reemitirFactura()" [disabled]="guardando()" title="Vuelve a generar la factura con los datos actuales del cliente, el vehículo y el taller">🔄 Reemitir</button>

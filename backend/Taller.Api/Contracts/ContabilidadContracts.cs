@@ -52,7 +52,12 @@ public record ImporteServicio(TipoServicio Servicio, decimal Importe);
 public record ClienteImporte(int ClienteId, string Nombre, decimal Importe, int Ordenes);
 
 /// <summary>Mes (primer día) con lo facturado, lo cobrado y los gastos.</summary>
-public record MesContable(DateOnly Mes, decimal Facturado, decimal Cobrado, decimal Gastos);
+/// <summary>
+/// Importes de un mes para el gráfico: FacturadoCobrado es la parte de lo facturado ese mes que ya está pagada (sea cuando
+/// sea el pago) y Cobrado, lo pagado ese mes (sea cual sea el mes de entrega). Costes es el coste de compra de las piezas de las órdenes entregadas ese mes (según
+/// sus líneas) y Gastos, los gastos generales (los ligados a una orden ya están en el coste de sus líneas).
+/// </summary>
+public record MesContable(DateOnly Mes, decimal Facturado, decimal FacturadoCobrado, decimal Cobrado, decimal Costes, decimal Gastos);
 
 public record OrdenContable(
     int Id, DateTimeOffset? FechaSalida, string Vehiculo, string? Matricula, int ClienteId, string ClienteNombre,

@@ -6,14 +6,14 @@ import { Api, mensajeError } from '../core/api';
 import { CodigoLeido, EstadoCodigo, FichaDiagnosis, FichaDiagnosisRequest, Medicion, Prueba, ResultadoMedicion, ValorReferencia } from '../core/models';
 import { comparar, leerNumero, rango } from '../core/referencias';
 
-const ESTADOS: { valor: EstadoCodigo; etiqueta: string }[] = [
+export const ESTADOS: { valor: EstadoCodigo; etiqueta: string }[] = [
   { valor: 'Activo', etiqueta: 'Almacenado' },
   { valor: 'Pendiente', etiqueta: 'Pendiente' },
   { valor: 'Permanente', etiqueta: 'Permanente' },
   { valor: 'Historico', etiqueta: 'Histórico / borrado' }
 ];
 
-const RESULTADOS: { valor: ResultadoMedicion; etiqueta: string }[] = [
+export const RESULTADOS: { valor: ResultadoMedicion; etiqueta: string }[] = [
   { valor: 'SinValorar', etiqueta: '—' },
   { valor: 'Correcto', etiqueta: 'Correcto' },
   { valor: 'FueraDeRango', etiqueta: 'Fuera de rango' }

@@ -12,3 +12,5 @@ backend/Taller.Api/privado
 .vscode
 *.xlsx
 backend/Taller.Api/geoip
+/Centralitas/
+/ml/

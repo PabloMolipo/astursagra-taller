@@ -242,6 +242,48 @@ namespace Taller.Api.Data.Migrations
                     b.ToTable("ArchivosReprogramacion", (string)null);
                 });
 
+            modelBuilder.Entity("Taller.Api.Domain.BibliotecaSoftware", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Clave")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("Familia")
+                        .HasMaxLength(60)
+                        .HasColumnType("character varying(60)");
+
+                    b.Property<DateTimeOffset>("FechaAlta")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset>("Modificada")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Referencia")
+                        .HasMaxLength(60)
+                        .HasColumnType("character varying(60)");
+
+                    b.Property<string>("Software")
+                        .HasMaxLength(60)
+                        .HasColumnType("character varying(60)");
+
+                    b.Property<long>("Tamano")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Clave")
+                        .IsUnique();
+
+                    b.ToTable("BibliotecasSoftware", (string)null);
+                });
+
             modelBuilder.Entity("Taller.Api.Domain.CarpetaSharePoint", b =>
                 {
                     b.Property<string>("DriveId")
@@ -345,6 +387,84 @@ namespace Taller.Api.Data.Migrations
                             Orden = 3,
                             UrlVehiculo = "https://7zap.com/es/catalog/cars/{marca-slug}/"
                         });
+                });
+
+            modelBuilder.Entity("Taller.Api.Domain.Centralita", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Archivo")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<int?>("ComparadaConId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Familia")
+                        .HasMaxLength(60)
+                        .HasColumnType("character varying(60)");
+
+                    b.Property<DateTimeOffset>("FechaAlta")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Hardware")
+                        .HasMaxLength(60)
+                        .HasColumnType("character varying(60)");
+
+                    b.Property<string>("Nombre")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("NombreArchivo")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<string>("Notas")
+                        .HasMaxLength(4000)
+                        .HasColumnType("character varying(4000)");
+
+                    b.Property<string>("Referencia")
+                        .HasMaxLength(60)
+                        .HasColumnType("character varying(60)");
+
+                    b.Property<string>("Sha256")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<string>("Software")
+                        .HasMaxLength(60)
+                        .HasColumnType("character varying(60)");
+
+                    b.Property<long>("Tamano")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Tipo")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<int?>("VehiculoId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ComparadaConId");
+
+                    b.HasIndex("Sha256");
+
+                    b.HasIndex("Tipo");
+
+                    b.HasIndex("VehiculoId");
+
+                    b.ToTable("Centralitas", (string)null);
                 });
 
             modelBuilder.Entity("Taller.Api.Domain.Cliente", b =>
@@ -953,6 +1073,59 @@ namespace Taller.Api.Data.Migrations
                     b.ToTable("Gastos", (string)null);
                 });
 
+            modelBuilder.Entity("Taller.Api.Domain.ImportacionXdf", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Archivo")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("Avisos")
+                        .HasMaxLength(20000)
+                        .HasColumnType("character varying(20000)");
+
+                    b.Property<int?>("BibliotecaSoftwareId")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("CentralitaId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTimeOffset>("Fecha")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("Importados")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("NombreArchivo")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<int>("Omitidos")
+                        .HasColumnType("integer");
+
+                    b.Property<long>("Tamano")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Titulo")
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BibliotecaSoftwareId");
+
+                    b.HasIndex("CentralitaId");
+
+                    b.ToTable("ImportacionesXdf", (string)null);
+                });
+
             modelBuilder.Entity("Taller.Api.Domain.LineaTrabajo", b =>
                 {
                     b.Property<int>("Id")
@@ -1003,6 +1176,221 @@ namespace Taller.Api.Data.Migrations
                     b.HasIndex("OrdenTrabajoId");
 
                     b.ToTable("LineasTrabajo", (string)null);
+                });
+
+            modelBuilder.Entity("Taller.Api.Domain.MapaBiblioteca", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("BibliotecaSoftwareId")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("BigEndian")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("Columnas")
+                        .HasColumnType("integer");
+
+                    b.Property<double>("Desplazamiento")
+                        .HasColumnType("double precision");
+
+                    b.Property<int>("Direccion")
+                        .HasColumnType("integer");
+
+                    b.Property<double>("EjeXDesplazamiento")
+                        .HasColumnType("double precision");
+
+                    b.Property<int?>("EjeXDireccion")
+                        .HasColumnType("integer");
+
+                    b.Property<double>("EjeXFactor")
+                        .HasColumnType("double precision");
+
+                    b.Property<string>("EjeXTipo")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)");
+
+                    b.Property<string>("EjeXUnidad")
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)");
+
+                    b.Property<string>("EjeXValores")
+                        .HasMaxLength(4000)
+                        .HasColumnType("character varying(4000)");
+
+                    b.Property<double>("EjeYDesplazamiento")
+                        .HasColumnType("double precision");
+
+                    b.Property<int?>("EjeYDireccion")
+                        .HasColumnType("integer");
+
+                    b.Property<double>("EjeYFactor")
+                        .HasColumnType("double precision");
+
+                    b.Property<string>("EjeYTipo")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)");
+
+                    b.Property<string>("EjeYUnidad")
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)");
+
+                    b.Property<string>("EjeYValores")
+                        .HasMaxLength(4000)
+                        .HasColumnType("character varying(4000)");
+
+                    b.Property<double>("Factor")
+                        .HasColumnType("double precision");
+
+                    b.Property<int>("Filas")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Grupo")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<string>("Nombre")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("Notas")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<bool>("PorColumnas")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("TipoDato")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)");
+
+                    b.Property<string>("Unidad")
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BibliotecaSoftwareId", "Direccion");
+
+                    b.ToTable("MapasBiblioteca", (string)null);
+                });
+
+            modelBuilder.Entity("Taller.Api.Domain.MapaCentralita", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("BigEndian")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("CentralitaId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Columnas")
+                        .HasColumnType("integer");
+
+                    b.Property<double>("Desplazamiento")
+                        .HasColumnType("double precision");
+
+                    b.Property<int>("Direccion")
+                        .HasColumnType("integer");
+
+                    b.Property<double>("EjeXDesplazamiento")
+                        .HasColumnType("double precision");
+
+                    b.Property<int?>("EjeXDireccion")
+                        .HasColumnType("integer");
+
+                    b.Property<double>("EjeXFactor")
+                        .HasColumnType("double precision");
+
+                    b.Property<string>("EjeXTipo")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)");
+
+                    b.Property<string>("EjeXUnidad")
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)");
+
+                    b.Property<string>("EjeXValores")
+                        .HasMaxLength(4000)
+                        .HasColumnType("character varying(4000)");
+
+                    b.Property<double>("EjeYDesplazamiento")
+                        .HasColumnType("double precision");
+
+                    b.Property<int?>("EjeYDireccion")
+                        .HasColumnType("integer");
+
+                    b.Property<double>("EjeYFactor")
+                        .HasColumnType("double precision");
+
+                    b.Property<string>("EjeYTipo")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)");
+
+                    b.Property<string>("EjeYUnidad")
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)");
+
+                    b.Property<string>("EjeYValores")
+                        .HasMaxLength(4000)
+                        .HasColumnType("character varying(4000)");
+
+                    b.Property<double>("Factor")
+                        .HasColumnType("double precision");
+
+                    b.Property<int>("Filas")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Grupo")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<string>("Nombre")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("Notas")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<string>("Origen")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<bool>("PorColumnas")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("TipoDato")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)");
+
+                    b.Property<string>("Unidad")
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CentralitaId", "Direccion");
+
+                    b.ToTable("MapasCentralita", (string)null);
                 });
 
             modelBuilder.Entity("Taller.Api.Domain.Medicion", b =>
@@ -1824,6 +2212,21 @@ namespace Taller.Api.Data.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("Taller.Api.Domain.Centralita", b =>
+                {
+                    b.HasOne("Taller.Api.Domain.Centralita", null)
+                        .WithMany()
+                        .HasForeignKey("ComparadaConId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("Taller.Api.Domain.Vehiculo", "Vehiculo")
+                        .WithMany()
+                        .HasForeignKey("VehiculoId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Vehiculo");
+                });
+
             modelBuilder.Entity("Taller.Api.Domain.CodigoLeido", b =>
                 {
                     b.HasOne("Taller.Api.Domain.FichaDiagnosis", null)
@@ -1884,6 +2287,19 @@ namespace Taller.Api.Data.Migrations
                     b.Navigation("OrdenTrabajo");
                 });
 
+            modelBuilder.Entity("Taller.Api.Domain.ImportacionXdf", b =>
+                {
+                    b.HasOne("Taller.Api.Domain.BibliotecaSoftware", null)
+                        .WithMany()
+                        .HasForeignKey("BibliotecaSoftwareId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("Taller.Api.Domain.Centralita", null)
+                        .WithMany()
+                        .HasForeignKey("CentralitaId")
+                        .OnDelete(DeleteBehavior.SetNull);
+                });
+
             modelBuilder.Entity("Taller.Api.Domain.LineaTrabajo", b =>
                 {
                     b.HasOne("Taller.Api.Domain.OrdenTrabajo", "OrdenTrabajo")
@@ -1893,6 +2309,24 @@ namespace Taller.Api.Data.Migrations
                         .IsRequired();
 
                     b.Navigation("OrdenTrabajo");
+                });
+
+            modelBuilder.Entity("Taller.Api.Domain.MapaBiblioteca", b =>
+                {
+                    b.HasOne("Taller.Api.Domain.BibliotecaSoftware", null)
+                        .WithMany("Mapas")
+                        .HasForeignKey("BibliotecaSoftwareId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Taller.Api.Domain.MapaCentralita", b =>
+                {
+                    b.HasOne("Taller.Api.Domain.Centralita", null)
+                        .WithMany("Mapas")
+                        .HasForeignKey("CentralitaId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Taller.Api.Domain.Medicion", b =>
@@ -2014,6 +2448,16 @@ namespace Taller.Api.Data.Migrations
                         .IsRequired();
 
                     b.Navigation("Cliente");
+                });
+
+            modelBuilder.Entity("Taller.Api.Domain.BibliotecaSoftware", b =>
+                {
+                    b.Navigation("Mapas");
+                });
+
+            modelBuilder.Entity("Taller.Api.Domain.Centralita", b =>
+                {
+                    b.Navigation("Mapas");
                 });
 
             modelBuilder.Entity("Taller.Api.Domain.Cliente", b =>

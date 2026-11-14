@@ -81,8 +81,10 @@ public class ContabilidadController(TallerDbContext db) : ControllerBase
         var meses = Enumerable.Range(0, 12).Select(i => primerMes.AddMonths(i)).Select(m => new MesContable(
             m,
             ordenes.Where(x => x.Orden.Estado == EstadoOrden.Entregado && x.Orden.FechaSalida is { } f && Mes(f) == m).Sum(x => Imp(x.Totales)),
+            ordenes.Where(x => x.Orden.Estado == EstadoOrden.Entregado && x.Orden.Pagado && x.Orden.FechaSalida is { } f && Mes(f) == m).Sum(x => Imp(x.Totales)),
             ordenes.Where(x => x.Orden.Pagado && x.Orden.FechaPago is { } f && Mes(f) == m).Sum(x => Imp(x.Totales)),
-            gastos.Where(g => g.Fecha.Year == m.Year && g.Fecha.Month == m.Month).Sum(g => g.Importe))).ToList();
+            ordenes.Where(x => x.Orden.Estado == EstadoOrden.Entregado && x.Orden.FechaSalida is { } f && Mes(f) == m).Sum(x => x.Totales.Coste),
+            gastos.Where(g => g.OrdenTrabajoId is null && g.Fecha.Year == m.Year && g.Fecha.Month == m.Month).Sum(g => g.Importe))).ToList();
 
         OrdenContable Fila((OrdenTrabajo Orden, Totales Totales) x) => new(
             x.Orden.Id, x.Orden.FechaSalida, $"{x.Orden.Vehiculo.Marca} {x.Orden.Vehiculo.Modelo}".Trim(),

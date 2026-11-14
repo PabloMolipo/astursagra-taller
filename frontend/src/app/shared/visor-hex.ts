@@ -56,6 +56,8 @@ export class VisorHex {
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
   readonly url = input.required<string>();
   readonly tamano = input.required<number>();
+  /** Dirección a la que saltar al abrir (marcando su fila); si no, se empieza por el principio. */
+  readonly inicio = input<number | null>(null);
 
   protected readonly PAGINA = PAGINA;
   protected readonly Math = Math;
@@ -74,10 +76,16 @@ export class VisorHex {
   protected destino = '';
 
   constructor() {
-    // Al cambiar de archivo, se empieza por el principio.
+    // Al cambiar de archivo (o de dirección de inicio), se empieza por el principio o por esa dirección.
     effect(() => {
       this.url();
-      this.cargar(0);
+      const inicio = this.inicio();
+      if (inicio !== null) {
+        this.destino = hexOffset(inicio);
+        this.saltar();
+      } else {
+        this.cargar(0);
+      }
     });
   }
 
@@ -109,7 +117,7 @@ export class VisorHex {
     try {
       const fin = Math.min(offset + PAGINA, this.tamano()) - 1;
       const r = await fetch(this.url(), { headers: { Range: `bytes=${offset}-${fin}` }, credentials: 'same-origin' });
-      if (!r.ok) throw new Error(r.status === 401 ? 'Tu sesión ha caducado.' : 'No se ha podido leer el archivo de SharePoint.');
+      if (!r.ok) throw new Error(r.status === 401 ? 'Tu sesión ha caducado.' : 'No se ha podido leer el archivo.');
       let datos = new Uint8Array(await r.arrayBuffer());
       // Si el servidor ignorara el Range y mandara todo, se recorta la página.
       if (r.status === 200 && datos.length > PAGINA) datos = datos.subarray(offset, fin + 1);

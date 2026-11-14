@@ -31,6 +31,7 @@ public class GeneradorImagenVehiculo(OpcionesGemini opciones)
             TipoVehiculo.Camion => "truck",
             TipoVehiculo.Tractor => "agricultural tractor",
             TipoVehiculo.MaquinariaAgricola => "agricultural machine",
+            TipoVehiculo.Excavadora => "tracked excavator",
             TipoVehiculo.Otro => "vehicle",
             _ => "car"
         };
