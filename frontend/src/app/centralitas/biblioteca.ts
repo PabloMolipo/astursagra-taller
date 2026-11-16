@@ -143,7 +143,7 @@ export class BibliotecaLista implements OnInit {
                     </tr>
                   } @else {
                     <tr>
-                      <td>{{ m.nombre }}@if (m.notas) { <div class="hint notas">{{ m.notas }}</div> }</td>
+                      <td>{{ m.nombre }}@if (m.descripcion) { <div class="hint">{{ m.descripcion }}</div> }@if (m.notas) { <div class="hint notas">{{ m.notas }}</div> }</td>
                       <td>{{ etiquetaGrupo(m.grupo) }}</td>
                       <td class="mono">0x{{ hex(m.direccion) }}</td>
                       <td>{{ tamano(m) }}</td>
@@ -252,7 +252,7 @@ export class BibliotecaDetalleComponent implements OnInit {
   /** Mapas agrupados (los grupos en el orden de la lista de grupos; sin grupo, al final). */
   protected readonly porGrupo = computed(() => {
     const q = this.qMapa().trim().toLowerCase();
-    const mapas = (this.b()?.mapas ?? []).filter(m => !q || m.nombre.toLowerCase().includes(q) || hex(m.direccion).toLowerCase().includes(q.replace(/^0x/, '')));
+    const mapas = (this.b()?.mapas ?? []).filter(m => !q || m.nombre.toLowerCase().includes(q) || !!m.descripcion?.toLowerCase().includes(q) || hex(m.direccion).toLowerCase().includes(q.replace(/^0x/, '')));
     const grupos = GRUPOS.map(g => ({ clave: g.valor as string, etiqueta: g.etiqueta, color: g.color, mapas: mapas.filter(m => m.grupo === g.valor) }));
     grupos.push({ clave: 'sin', etiqueta: 'Sin grupo', color: 'var(--border)', mapas: mapas.filter(m => !m.grupo) });
     return grupos.filter(g => g.mapas.length > 0);

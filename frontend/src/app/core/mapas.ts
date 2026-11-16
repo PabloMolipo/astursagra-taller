@@ -52,7 +52,7 @@ function leerEje(datos: DataView, direccion: number | null, n: number, tipo: Tip
   );
 }
 
-export function leerMapa(datos: DataView, m: Omit<MapaCentralita, 'id' | 'nombre' | 'origen' | 'grupo' | 'notas'>): MapaLeido {
+export function leerMapa(datos: DataView, m: Omit<MapaCentralita, 'id' | 'nombre' | 'origen' | 'grupo' | 'notas' | 'descripcion' | 'ejeXNombre' | 'ejeYNombre'>): MapaLeido {
   const t = tamanoDato(m.tipoDato);
   const valores: number[][] = [];
   let minimo = Infinity;
@@ -200,7 +200,7 @@ export interface CambioMapa {
 }
 
 /** Qué ha cambiado en un mapa entre dos lecturas del mismo software (original y modificada); null si nada. */
-export function cambioMapa(a: DataView, b: DataView, m: Omit<MapaCentralita, 'id' | 'nombre' | 'origen' | 'grupo' | 'notas'>): CambioMapa | null {
+export function cambioMapa(a: DataView, b: DataView, m: Omit<MapaCentralita, 'id' | 'nombre' | 'origen' | 'grupo' | 'notas' | 'descripcion' | 'ejeXNombre' | 'ejeYNombre'>): CambioMapa | null {
   const va = leerMapa(a, m).valores.flat();
   const vb = leerMapa(b, m).valores.flat();
   let celdas = 0;
@@ -219,7 +219,7 @@ export function cambioMapa(a: DataView, b: DataView, m: Omit<MapaCentralita, 'id
 }
 
 /** Bytes que ocupa un mapa en el binario: valores y ejes, como [desde, hasta) (el hasta, excluido). */
-export function zonasMapa(m: Omit<MapaCentralita, 'id' | 'nombre' | 'origen' | 'grupo' | 'notas'>): [number, number][] {
+export function zonasMapa(m: Omit<MapaCentralita, 'id' | 'nombre' | 'origen' | 'grupo' | 'notas' | 'descripcion' | 'ejeXNombre' | 'ejeYNombre'>): [number, number][] {
   const zonas: [number, number][] = [[m.direccion, m.direccion + m.columnas * m.filas * tamanoDato(m.tipoDato)]];
   if (m.ejeXDireccion !== null) zonas.push([m.ejeXDireccion, m.ejeXDireccion + m.columnas * tamanoDato(m.ejeXTipo)]);
   if (m.filas > 1 && m.ejeYDireccion !== null) zonas.push([m.ejeYDireccion, m.ejeYDireccion + m.filas * tamanoDato(m.ejeYTipo)]);
@@ -227,7 +227,7 @@ export function zonasMapa(m: Omit<MapaCentralita, 'id' | 'nombre' | 'origen' | '
 }
 
 /** Zonas cambiadas que no tocan ningún mapa conocido (p. ej. anulaciones de EGR/DPF o códigos de avería). */
-export function zonasSinMapa<T extends { desde: number; hasta: number }>(regiones: T[], mapas: Omit<MapaCentralita, 'id' | 'nombre' | 'origen' | 'grupo' | 'notas'>[]): T[] {
+export function zonasSinMapa<T extends { desde: number; hasta: number }>(regiones: T[], mapas: Omit<MapaCentralita, 'id' | 'nombre' | 'origen' | 'grupo' | 'notas' | 'descripcion' | 'ejeXNombre' | 'ejeYNombre'>[]): T[] {
   const ocupadas = mapas.flatMap(zonasMapa).sort((x, y) => x[0] - y[0]);
   return regiones.filter(r => !ocupadas.some(([d, h]) => d < r.hasta && r.desde < h));
 }

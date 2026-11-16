@@ -65,10 +65,13 @@ public static class MapeoMapas
         m.EjeYDesplazamiento = req.EjeYDesplazamiento;
         m.EjeYValores = req.Filas > 1 && req.EjeYDireccion is null ? Normalizar.Texto(req.EjeYValores) : null;
         m.Notas = Normalizar.Texto(req.Notas);
+        m.Descripcion = Normalizar.Texto(req.Descripcion);
+        m.EjeXNombre = Normalizar.Texto(req.EjeXNombre);
+        m.EjeYNombre = req.Filas > 1 ? Normalizar.Texto(req.EjeYNombre) : null;
     }
 
     public static MapaDto ToDto(DefinicionMapa m, int id, OrigenMapa origen) => new(
         id, m.Nombre, origen, m.Grupo, m.Direccion, m.Columnas, m.Filas, m.TipoDato, m.BigEndian, m.PorColumnas, m.Factor, m.Desplazamiento, m.Unidad,
         m.EjeXDireccion, m.EjeXTipo, m.EjeXFactor, m.EjeXUnidad, m.EjeYDireccion, m.EjeYTipo, m.EjeYFactor, m.EjeYUnidad, m.Notas,
-        m.EjeXDesplazamiento, m.EjeXValores, m.EjeYDesplazamiento, m.EjeYValores);
+        m.EjeXDesplazamiento, m.EjeXValores, m.EjeYDesplazamiento, m.EjeYValores, m.Descripcion, m.EjeXNombre, m.EjeYNombre);
 }

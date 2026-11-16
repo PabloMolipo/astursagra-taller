@@ -89,6 +89,9 @@ public class Centralita
 public abstract class DefinicionMapa
 {
     public required string Nombre { get; set; }
+
+    /// <summary>Qué es el mapa en palabras (p. ej. la descripción del A2L traducida); el nombre suele ser una abreviatura.</summary>
+    public string? Descripcion { get; set; }
     public GrupoMapa? Grupo { get; set; }
 
     public int Direccion { get; set; }
@@ -110,6 +113,9 @@ public abstract class DefinicionMapa
     public double EjeXDesplazamiento { get; set; }
     public string? EjeXUnidad { get; set; }
 
+    /// <summary>Qué mide el eje (régimen, carga…), para la cabecera de la tabla.</summary>
+    public string? EjeXNombre { get; set; }
+
     /// <summary>Valores fijos del eje X separados por «;» (ejes que no están en el binario, p. ej. de un XDF), si no tiene dirección.</summary>
     public string? EjeXValores { get; set; }
 
@@ -119,6 +125,7 @@ public abstract class DefinicionMapa
     public double EjeYFactor { get; set; } = 1;
     public double EjeYDesplazamiento { get; set; }
     public string? EjeYUnidad { get; set; }
+    public string? EjeYNombre { get; set; }
     public string? EjeYValores { get; set; }
 
     public string? Notas { get; set; }
@@ -150,6 +157,9 @@ public abstract class DefinicionMapa
         EjeYUnidad = o.EjeYUnidad;
         EjeYValores = o.EjeYValores;
         Notas = o.Notas;
+        Descripcion = o.Descripcion;
+        EjeXNombre = o.EjeXNombre;
+        EjeYNombre = o.EjeYNombre;
     }
 }
 

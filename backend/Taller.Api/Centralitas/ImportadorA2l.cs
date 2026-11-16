@@ -37,6 +37,7 @@ public static class ImportadorA2l
         var fuera = 0;
         var noAdmitidos = 0;
         var dudosos = 0;
+        var funciones = new Dictionary<MapaCentralita, string>();
         // Primero los mapas, luego curvas, bloques y valores sueltos: si hay que recortar, se quedan fuera los valores.
         foreach (var c in modulo.Caracteristicas.OrderBy(c => Prioridad(c.Tipo)))
         {
@@ -60,6 +61,10 @@ public static class ImportadorA2l
                     mapa.Notas = mapa.Notas[..Math.Min(mapa.Notas.Length, 2000)];
                 }
                 mapas.Add(mapa);
+                if (modulo.Funciones.GetValueOrDefault(c.Nombre) is { } funcion)
+                {
+                    funciones[mapa] = funcion;
+                }
             }
             catch (FormatException e)
             {
@@ -78,6 +83,7 @@ public static class ImportadorA2l
         {
             avisos.Add($"… y otros {noAdmitidos - 200:N0} parámetros no admitidos.");
         }
+        AgruparPorFuncion(funciones);
         var conEje = mapas.Count(m => m.EjeXDireccion is not null && m.Columnas >= 3);
         if (dudosos > 0)
         {
@@ -86,6 +92,32 @@ public static class ImportadorA2l
                 + (dudosos > conEje * 0.05 ? " Son demasiados: comprueba que el A2L es de este número de software exacto." : ""));
         }
         return new(modulo.Titulo, null, mapas, avisos);
+    }
+
+    /// <summary>
+    /// Los parámetros de una misma función de Bosch tratan de lo mismo: los que se quedaron sin grupo por su nombre toman
+    /// el de su función si está claro, es decir, si al menos el 30 % de la función ya tiene grupo y dos tercios de esos
+    /// coinciden. Las funciones grandes y variadas (diagnóstico, coordinación…) no lo cumplen y no contagian a nadie.
+    /// </summary>
+    private static void AgruparPorFuncion(Dictionary<MapaCentralita, string> funciones)
+    {
+        foreach (var funcion in funciones.GroupBy(f => f.Value, f => f.Key))
+        {
+            var votos = funcion.Where(m => m.Grupo is not null).GroupBy(m => m.Grupo!.Value).Select(g => (Grupo: g.Key, Votos: g.Count())).ToList();
+            if (votos.Count == 0)
+            {
+                continue;
+            }
+            var (grupo, n) = votos.MaxBy(v => v.Votos);
+            var conGrupo = votos.Sum(v => v.Votos);
+            if (n >= 2 && n * 3 >= conGrupo * 2 && conGrupo * 10 >= funcion.Count() * 3)
+            {
+                foreach (var m in funcion.Where(m => m.Grupo is null))
+                {
+                    m.Grupo = grupo;
+                }
+            }
+        }
     }
 
     /// <summary>Los ejes que están en el binario, con 3 puntos o más, salen crecientes (los de valores fijos no se miran).</summary>
@@ -328,9 +360,15 @@ public static class ImportadorA2l
             var bigEndian = (BigEndian(c.OrdenBytes) ?? m.BigEndian) ^ invertir;
             var conversion = m.Convertir(c.Conversion);
             var nota = new List<string>();
-            if (c.LongId is { Length: > 0 } descripcion)
+            var descripcion = GlosarioBosch.Traducir(c.LongId);
+            if (c.LongId is { Length: > 0 } original && original != descripcion)
             {
-                nota.Add(descripcion);
+                nota.Add($"Descripción original: {original}");
+            }
+            var funcion = m.Funciones.GetValueOrDefault(c.Nombre);
+            if (funcion is not null)
+            {
+                nota.Add($"Función de Bosch: {funcion}");
             }
 
             // Puntos de cada eje: los de los ejes comunes y fijos se saben antes; los de los propios (STD_AXIS) se leen
@@ -386,6 +424,7 @@ public static class ImportadorA2l
             var mapa = new MapaCentralita
             {
                 Nombre = c.Nombre[..Math.Min(c.Nombre.Length, 200)],
+                Descripcion = descripcion,
                 Origen = OrigenMapa.Manual,
                 Direccion = (int)valores.Direccion,
                 Columnas = columnas,
@@ -396,7 +435,7 @@ public static class ImportadorA2l
                 Factor = conversion.Factor,
                 Desplazamiento = conversion.Desplazamiento,
                 Unidad = Corta(c.Unidad ?? conversion.Unidad),
-                Grupo = ClasificadorGrupos.Grupo($"{c.Nombre} {c.LongId}")
+                Grupo = ClasificadorGrupos.Grupo($"{c.Nombre} {c.LongId} {descripcion} {funcion}")
             };
             if (conversion.Nota is { } n)
             {
@@ -421,6 +460,9 @@ public static class ImportadorA2l
                     continue;
                 }
                 var unidad = Corta(e.Unidad ?? leido.Conversion.Unidad);
+                var magnitud = GlosarioBosch.Magnitud(e.Atributo == "COM_AXIS" && e.Referencia is { } r && m.EjesComunes.TryGetValue(r, out var comun)
+                    ? comun.Magnitud is null or "NO_INPUT_QUANTITY" ? e.Magnitud : comun.Magnitud
+                    : e.Magnitud);
                 if (leido.Conversion.Nota is { } notaEje)
                 {
                     nota.Add($"Eje {letra}: {notaEje}");
@@ -433,6 +475,7 @@ public static class ImportadorA2l
                     mapa.EjeXDesplazamiento = leido.Conversion.Desplazamiento;
                     mapa.EjeXValores = leido.Valores;
                     mapa.EjeXUnidad = unidad;
+                    mapa.EjeXNombre = magnitud;
                 }
                 else if (filas > 1)
                 {
@@ -442,6 +485,7 @@ public static class ImportadorA2l
                     mapa.EjeYDesplazamiento = leido.Conversion.Desplazamiento;
                     mapa.EjeYValores = leido.Valores;
                     mapa.EjeYUnidad = unidad;
+                    mapa.EjeYNombre = magnitud;
                 }
             }
             var notas = string.Join("\n", nota);
@@ -607,9 +651,9 @@ public static class ImportadorA2l
     private sealed record Caracteristica(string Nombre, string? LongId, string Tipo, long Direccion, string Disposicion, string Conversion,
         List<Eje> Ejes, string? OrdenBytes, string? Unidad, (int, int)? Dimensiones);
 
-    private sealed record Eje(string Atributo, string Conversion, int Maximo, string? Referencia, List<double>? Fijos, string? Unidad);
+    private sealed record Eje(string Atributo, string Conversion, int Maximo, string? Referencia, List<double>? Fijos, string? Unidad, string? Magnitud);
 
-    private sealed record EjeComun(string Nombre, string? LongId, long Direccion, string Disposicion, string? Conversion, int Maximo, string? OrdenBytes);
+    private sealed record EjeComun(string Nombre, string? LongId, long Direccion, string Disposicion, string? Conversion, int Maximo, string? OrdenBytes, string? Magnitud);
 
     private sealed record ParteDisposicion(string Clave, int Posicion, string? Tipo, string? Orden, string? Direccionamiento, int Reserva);
 
@@ -626,6 +670,9 @@ public static class ImportadorA2l
         public Dictionary<string, EjeComun> EjesComunes { get; } = [];
         public Dictionary<string, Disposicion> Disposiciones { get; } = [];
         public List<string> Avisos { get; } = [];
+
+        /// <summary>Función de Bosch que define cada parámetro (FUNCTION … DEF_CHARACTERISTIC), por nombre del parámetro.</summary>
+        public Dictionary<string, string> Funciones { get; } = [];
         private readonly Dictionary<string, Bloque> metodos = [];
         private readonly Dictionary<string, Conversion> conversiones = [];
         private readonly Dictionary<string, int> alineaciones = new() { ["UBYTE"] = 1, ["SBYTE"] = 1, ["UWORD"] = 2, ["SWORD"] = 2, ["ULONG"] = 4, ["SLONG"] = 4, ["FLOAT32_IEEE"] = 4 };
@@ -655,7 +702,7 @@ public static class ImportadorA2l
                             m.Titulo ??= lexico.Siguiente()?.Texto is { Length: > 0 } titulo ? titulo : null;
                         }
                         break;
-                    case "CHARACTERISTIC" or "AXIS_PTS" or "RECORD_LAYOUT" or "COMPU_METHOD" or "MOD_COMMON" or "MOD_PAR":
+                    case "CHARACTERISTIC" or "AXIS_PTS" or "RECORD_LAYOUT" or "COMPU_METHOD" or "MOD_COMMON" or "MOD_PAR" or "FUNCTION":
                         m.Agregar(Bloque.Leer(lexico, clave.Texto));
                         break;
                     default:
@@ -703,11 +750,17 @@ public static class ImportadorA2l
                     case "COMPU_METHOD":
                         metodos[a[0]] = b;
                         break;
+                    case "FUNCTION":
+                        foreach (var parametro in b.Hijos.Where(h => h.Clave == "DEF_CHARACTERISTIC").SelectMany(h => h.Argumentos))
+                        {
+                            Funciones.TryAdd(parametro, a[0]);
+                        }
+                        break;
                     case "RECORD_LAYOUT":
                         Disposiciones[a[0]] = LeerDisposicion(a);
                         break;
                     case "AXIS_PTS":
-                        EjesComunes[a[0]] = new EjeComun(a[0], Limpia(a[1]), Entero(a[2]) ?? 0, a[4], a[6], (int)(Entero(a[7]) ?? 0), b.Opcion("BYTE_ORDER", 1)?[0]);
+                        EjesComunes[a[0]] = new EjeComun(a[0], Limpia(a[1]), Entero(a[2]) ?? 0, a[4], a[6], (int)(Entero(a[7]) ?? 0), b.Opcion("BYTE_ORDER", 1)?[0], a[3]);
                         break;
                     case "CHARACTERISTIC":
                         var ejes = b.Hijos.Where(h => h.Clave == "AXIS_DESCR").Select(LeerEje).ToList();
@@ -750,7 +803,7 @@ public static class ImportadorA2l
             }
             var deposito = b.Opcion("DEPOSIT", 1)?[0];
             var atributo = deposito == "DIFFERENCE" ? "DIFFERENCE" : a[0];
-            return new Eje(atributo, a[2], (int)(Entero(a[3]) ?? 0), b.Opcion("AXIS_PTS_REF", 1)?[0], fijos, b.Opcion("PHYS_UNIT", 1)?[0]);
+            return new Eje(atributo, a[2], (int)(Entero(a[3]) ?? 0), b.Opcion("AXIS_PTS_REF", 1)?[0], fijos, b.Opcion("PHYS_UNIT", 1)?[0], a[1]);
         }
 
         private static readonly Dictionary<string, int> Aridad = new()

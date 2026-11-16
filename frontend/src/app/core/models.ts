@@ -970,6 +970,11 @@ export interface MapaCentralita {
   ejeXValores: string | null;
   ejeYDesplazamiento: number;
   ejeYValores: string | null;
+  /** Qué es el mapa en palabras (p. ej. la descripción del A2L traducida). */
+  descripcion: string | null;
+  /** Qué mide cada eje (régimen, carga…). */
+  ejeXNombre: string | null;
+  ejeYNombre: string | null;
 }
 
 export type MapaRequest = Omit<MapaCentralita, 'id' | 'origen'>;
@@ -989,6 +994,9 @@ export interface DescribirMapaRequest {
   valoresOtra: (number | null)[][] | null;
   otraEsOriginal: boolean;
   sugerencia: string | null;
+  descripcion: string | null;
+  ejeXNombre: string | null;
+  ejeYNombre: string | null;
 }
 
 export interface DescripcionMapa {

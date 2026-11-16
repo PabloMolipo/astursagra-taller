@@ -43,7 +43,7 @@ type ModoVista = 'original' | 'modificada' | 'diferencia';
         <table>
           <thead>
             <tr>
-              <th class="esquina">{{ definicion().filas > 1 ? (definicion().ejeYUnidad ?? 'Y') + ' / ' + (definicion().ejeXUnidad ?? 'X') : (definicion().ejeXUnidad ?? 'X') }}</th>
+              <th class="esquina">{{ definicion().filas > 1 ? eje(definicion().ejeYNombre, definicion().ejeYUnidad, 'Y') + ' / ' + eje(definicion().ejeXNombre, definicion().ejeXUnidad, 'X') : eje(definicion().ejeXNombre, definicion().ejeXUnidad, 'X') }}</th>
               @for (x of m.ejeX; track $index) {
                 <th>{{ formato(x) }}</th>
               }
@@ -89,6 +89,12 @@ export class VisorMapa {
   readonly modo = input<ModoVista>('original');
 
   protected readonly formato = formatoValor;
+
+  /** Cabecera de un eje: qué mide y su unidad («Régimen del motor (rpm)»), lo que haya de las dos, o la letra. */
+  protected eje(nombre: string | null, unidad: string | null, letra: string) {
+    return nombre && unidad ? `${nombre} (${unidad})` : (nombre ?? unidad ?? letra);
+  }
+
   private readonly original = computed(() => leerMapa(this.datos(), this.definicion()));
   private readonly modificada = computed(() => (this.otra() ? leerMapa(this.otra()!, this.definicion()) : null));
   /** Lo que se pinta: la original, o la modificada en las vistas «modificada» y «diferencia». */
@@ -407,6 +413,7 @@ export class VisorMapa {
                         @if (grupoDe(m.grupo); as g) { <span class="punto" [style.background]="g.color" [title]="g.etiqueta"></span> }
                         {{ m.nombre }}
                       </span>
+                      @if (m.descripcion) { <span class="descripcion-mapa">{{ m.descripcion }}</span> }
                       <span class="hint mono">{{ m.filas > 1 ? m.columnas + '×' + m.filas : m.columnas }} · 0x{{ hex(m.direccion) }}{{ m.origen === 'Manual' ? ' · ✎' : '' }}{{ grupoDe(m.grupo) ? ' · ' + grupoDe(m.grupo)!.etiqueta : '' }}
                         @if (cambios().get(m.id); as k) { <span class="cambio" [class.baja]="k.porcentaje < 0">≠ {{ textoCambio(k.porcentaje) }}</span> }
                         @if (sugerencias().get(m.id); as s) { <span class="sugerencia" title="Reconocimiento automático: posible mapa de potencia">⚡ {{ porcentaje(s.probabilidad) }}</span> }</span>
@@ -428,6 +435,7 @@ export class VisorMapa {
                 <div class="page-header" style="margin-bottom: 0.6rem">
                   <div>
                     <h3 style="margin: 0">{{ e.nombre || 'Mapa nuevo' }}</h3>
+                    @if (e.descripcion) { <div>{{ e.descripcion }}</div> }
                     <div class="hint mono">0x{{ hex(e.direccion) }} · {{ e.filas > 1 ? e.columnas + ' × ' + e.filas : e.columnas + ' puntos' }} · {{ etiquetaTipo(e.tipoDato) }} · {{ e.bigEndian ? 'big endian' : 'little endian' }}{{ e.filas > 1 ? (e.porColumnas ? ' · por columnas' : ' · por filas') : '' }}</div>
                   </div>
                   <div class="toolbar" style="margin: 0">
@@ -485,6 +493,7 @@ export class VisorMapa {
                         @for (n of nombresHabituales(); track n.nombre) { <option [value]="n.nombre">{{ n.unidad ?? '' }}</option> }
                       </datalist>
                     </label>
+                    <label class="field full">Descripción <input [(ngModel)]="e.descripcion" (ngModelChange)="refrescar()" maxlength="300" placeholder="Qué es el mapa, en palabras" /></label>
                     <label class="field">Dirección (hex) <input class="mono" [ngModel]="hex(e.direccion)" (ngModelChange)="direccion('direccion', $event)" /></label>
                     <label class="field">Columnas (X) <input type="number" min="1" max="256" [(ngModel)]="e.columnas" (ngModelChange)="refrescar()" /></label>
                     <label class="field">Filas (Y) <input type="number" min="1" max="256" [(ngModel)]="e.filas" (ngModelChange)="refrescar()" /></label>
@@ -523,6 +532,7 @@ export class VisorMapa {
                       <label class="field full">Eje X: valores fijos <input [(ngModel)]="e.ejeXValores" (ngModelChange)="refrescar()" placeholder="Separados por ; (p. ej. 800;1000;1500…), si el eje no está en el binario" /></label>
                     }
                     <label class="field">Eje X: unidad <input [(ngModel)]="e.ejeXUnidad" (ngModelChange)="refrescar()" maxlength="30" placeholder="rpm…" /></label>
+                    <label class="field">Eje X: qué mide <input [(ngModel)]="e.ejeXNombre" (ngModelChange)="refrescar()" maxlength="60" placeholder="Régimen del motor…" /></label>
                     @if (e.filas > 1) {
                       <label class="field">Eje Y: dirección (hex) <input class="mono" [ngModel]="e.ejeYDireccion === null ? '' : hex(e.ejeYDireccion)" (ngModelChange)="direccion('ejeYDireccion', $event)" placeholder="vacío = 0, 1, 2…" /></label>
                       <label class="field">Eje Y: tipo
@@ -536,6 +546,7 @@ export class VisorMapa {
                         <label class="field full">Eje Y: valores fijos <input [(ngModel)]="e.ejeYValores" (ngModelChange)="refrescar()" placeholder="Separados por ;" /></label>
                       }
                       <label class="field">Eje Y: unidad <input [(ngModel)]="e.ejeYUnidad" (ngModelChange)="refrescar()" maxlength="30" placeholder="mg/carrera…" /></label>
+                      <label class="field">Eje Y: qué mide <input [(ngModel)]="e.ejeYNombre" (ngModelChange)="refrescar()" maxlength="60" placeholder="Carga, cantidad inyectada…" /></label>
                     }
                     <label class="field full">Notas <textarea [(ngModel)]="e.notas" rows="2"></textarea></label>
                     <div class="form-actions full">
@@ -599,6 +610,7 @@ export class VisorMapa {
     .lista li button:hover { background: var(--bg); }
     .lista li button.activa { background: var(--bg); outline: 1px solid var(--primary); }
     .lista .nombre { font-size: 0.85rem; }
+    .lista .descripcion-mapa { display: block; font-size: 0.75rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .lista .hint { font-size: 0.72rem; }
     .filtros { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 0.3rem; }
     .filtros input { flex: 1; min-width: 140px; }
@@ -727,7 +739,7 @@ export class CentralitaDetalleComponent implements OnInit {
       if (this.clase() === 'curvas' && m.filas > 1) return false;
       if (this.clase() === 'manuales' && m.origen !== 'Manual') return false;
       if (!q) return true;
-      return m.nombre.toLowerCase().includes(q) || (direccion !== null && m.direccion <= direccion && direccion < m.direccion + m.columnas * m.filas * 4)
+      return m.nombre.toLowerCase().includes(q) || !!m.descripcion?.toLowerCase().includes(q) || (direccion !== null && m.direccion <= direccion && direccion < m.direccion + m.columnas * m.filas * 4)
         || this.hex(m.direccion).toLowerCase().includes(q.replace(/^0x/, ''));
     });
     const s = this.sugerencias();
@@ -878,7 +890,7 @@ export class CentralitaDetalleComponent implements OnInit {
     const e: MapaRequest = {
       nombre: '', grupo: null, direccion, columnas: 16, filas: 16, tipoDato: 'U16', bigEndian, porColumnas: false, factor: 1, desplazamiento: 0, unidad: null,
       ejeXDireccion: null, ejeXTipo: 'U16', ejeXFactor: 1, ejeXUnidad: null, ejeYDireccion: null, ejeYTipo: 'U16', ejeYFactor: 1, ejeYUnidad: null, notas: null,
-      ejeXDesplazamiento: 0, ejeXValores: null, ejeYDesplazamiento: 0, ejeYValores: null
+      ejeXDesplazamiento: 0, ejeXValores: null, ejeYDesplazamiento: 0, ejeYValores: null, descripcion: null, ejeXNombre: null, ejeYNombre: null
     };
     this.seleccion.set(null);
     this.edicion.set(e);
@@ -1005,7 +1017,8 @@ export class CentralitaDetalleComponent implements OnInit {
     const c = this.c();
     if (!e || !c) return;
     this.refrescar();
-    const req: MapaRequest = { ...this.vista()!, nombre: e.nombre.trim(), unidad: e.unidad || null, ejeXUnidad: e.ejeXUnidad || null, ejeYUnidad: e.ejeYUnidad || null, notas: e.notas?.trim() || null };
+    const req: MapaRequest = { ...this.vista()!, nombre: e.nombre.trim(), unidad: e.unidad || null, ejeXUnidad: e.ejeXUnidad || null, ejeYUnidad: e.ejeYUnidad || null, notas: e.notas?.trim() || null,
+      descripcion: e.descripcion?.trim() || null, ejeXNombre: e.ejeXNombre?.trim() || null, ejeYNombre: e.ejeYNombre?.trim() || null };
     const s = this.seleccion();
     this.trabajando.set(true);
     (s ? this.api.actualizarMapa(c.id, s.id, req) : this.api.crearMapa(c.id, req)).subscribe({
@@ -1052,7 +1065,8 @@ export class CentralitaDetalleComponent implements OnInit {
       ejeX: nulos(esta.ejeX), ejeXUnidad: v.ejeXUnidad, ejeY: nulos(esta.ejeY), ejeYUnidad: v.ejeYUnidad,
       valores: esta.valores.map(nulos), valoresOtra: otra ? otra.valores.map(nulos) : null,
       otraEsOriginal: this.identificacion()?.invertida ?? false,
-      sugerencia: s ? `posible mapa de potencia (${this.porcentaje(s.probabilidad)})` : null
+      sugerencia: s ? `posible mapa de potencia (${this.porcentaje(s.probabilidad)})` : null,
+      descripcion: v.descripcion, ejeXNombre: v.ejeXNombre, ejeYNombre: v.ejeYNombre
     };
     this.describiendo.set(true);
     this.errorDescripcion.set(null);

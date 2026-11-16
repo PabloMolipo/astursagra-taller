@@ -69,7 +69,10 @@ public record MapaDto(
     double EjeXDesplazamiento = 0,
     string? EjeXValores = null,
     double EjeYDesplazamiento = 0,
-    string? EjeYValores = null);
+    string? EjeYValores = null,
+    string? Descripcion = null,
+    string? EjeXNombre = null,
+    string? EjeYNombre = null);
 
 public record CadenaBinario(int Direccion, string Texto);
 
@@ -121,7 +124,10 @@ public record MapaRequest(
     double EjeXDesplazamiento = 0,
     [MaxLength(4000)] string? EjeXValores = null,
     double EjeYDesplazamiento = 0,
-    [MaxLength(4000)] string? EjeYValores = null);
+    [MaxLength(4000)] string? EjeYValores = null,
+    [MaxLength(300)] string? Descripcion = null,
+    [MaxLength(60)] string? EjeXNombre = null,
+    [MaxLength(60)] string? EjeYNombre = null);
 
 public record BibliotecaListItem(
     int Id,
@@ -182,6 +188,9 @@ public record DescribirMapaRequest(
     [Required, MaxLength(256)] double?[][] Valores,
     [MaxLength(256)] double?[][]? ValoresOtra,
     bool OtraEsOriginal,
-    [MaxLength(200)] string? Sugerencia);
+    [MaxLength(200)] string? Sugerencia,
+    [MaxLength(300)] string? Descripcion = null,
+    [MaxLength(60)] string? EjeXNombre = null,
+    [MaxLength(60)] string? EjeYNombre = null);
 
 public record DescripcionMapa(string Texto, string Modelo);

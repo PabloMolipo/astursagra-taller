@@ -1195,6 +1195,10 @@ namespace Taller.Api.Data.Migrations
                     b.Property<int>("Columnas")
                         .HasColumnType("integer");
 
+                    b.Property<string>("Descripcion")
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)");
+
                     b.Property<double>("Desplazamiento")
                         .HasColumnType("double precision");
 
@@ -1209,6 +1213,10 @@ namespace Taller.Api.Data.Migrations
 
                     b.Property<double>("EjeXFactor")
                         .HasColumnType("double precision");
+
+                    b.Property<string>("EjeXNombre")
+                        .HasMaxLength(60)
+                        .HasColumnType("character varying(60)");
 
                     b.Property<string>("EjeXTipo")
                         .IsRequired()
@@ -1231,6 +1239,10 @@ namespace Taller.Api.Data.Migrations
 
                     b.Property<double>("EjeYFactor")
                         .HasColumnType("double precision");
+
+                    b.Property<string>("EjeYNombre")
+                        .HasMaxLength(60)
+                        .HasColumnType("character varying(60)");
 
                     b.Property<string>("EjeYTipo")
                         .IsRequired()
@@ -1300,6 +1312,10 @@ namespace Taller.Api.Data.Migrations
                     b.Property<int>("Columnas")
                         .HasColumnType("integer");
 
+                    b.Property<string>("Descripcion")
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)");
+
                     b.Property<double>("Desplazamiento")
                         .HasColumnType("double precision");
 
@@ -1314,6 +1330,10 @@ namespace Taller.Api.Data.Migrations
 
                     b.Property<double>("EjeXFactor")
                         .HasColumnType("double precision");
+
+                    b.Property<string>("EjeXNombre")
+                        .HasMaxLength(60)
+                        .HasColumnType("character varying(60)");
 
                     b.Property<string>("EjeXTipo")
                         .IsRequired()
@@ -1336,6 +1356,10 @@ namespace Taller.Api.Data.Migrations
 
                     b.Property<double>("EjeYFactor")
                         .HasColumnType("double precision");
+
+                    b.Property<string>("EjeYNombre")
+                        .HasMaxLength(60)
+                        .HasColumnType("character varying(60)");
 
                     b.Property<string>("EjeYTipo")
                         .IsRequired()

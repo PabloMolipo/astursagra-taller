@@ -45,6 +45,9 @@ internal static class DefinicionMapaConfiguration
         builder.Property(m => m.EjeXValores).HasMaxLength(4000);
         builder.Property(m => m.EjeYValores).HasMaxLength(4000);
         builder.Property(m => m.Notas).HasMaxLength(2000);
+        builder.Property(m => m.Descripcion).HasMaxLength(300);
+        builder.Property(m => m.EjeXNombre).HasMaxLength(60);
+        builder.Property(m => m.EjeYNombre).HasMaxLength(60);
     }
 }
 

@@ -83,6 +83,10 @@ public class DescriptorMapas(ClienteAnthropic cliente)
         s.AppendLine($"Tamaño del archivo: {c.Tamano / 1024} KB");
         s.AppendLine();
         s.AppendLine($"Mapa: «{req.Nombre}»" + (req.Grupo is { } g ? $" (grupo: {g})" : "") + (req.Detectado ? " — detectado automáticamente: valores y ejes en bruto, sin conversión" : ""));
+        if (!string.IsNullOrWhiteSpace(req.Descripcion))
+        {
+            s.AppendLine($"Descripción guardada del mapa: {req.Descripcion}");
+        }
         if (!string.IsNullOrWhiteSpace(req.Sugerencia))
         {
             s.AppendLine($"Reconocimiento automático del taller: {req.Sugerencia}");
@@ -90,10 +94,10 @@ public class DescriptorMapas(ClienteAnthropic cliente)
         var filas = req.Valores.Length;
         var columnas = req.Valores.Length > 0 ? req.Valores[0].Length : 0;
         s.AppendLine($"Dimensiones: {columnas} columnas (eje X) × {filas} filas (eje Y); unidad de los valores: {req.Unidad ?? "sin unidad"}");
-        s.AppendLine($"Eje X ({req.EjeXUnidad ?? "sin unidad"}): {Lista(req.EjeX)}");
+        s.AppendLine($"Eje X ({(Unir(req.EjeXNombre, req.EjeXUnidad) is { Length: > 0 } ex ? ex : "sin unidad")}): {Lista(req.EjeX)}");
         if (filas > 1)
         {
-            s.AppendLine($"Eje Y ({req.EjeYUnidad ?? "sin unidad"}): {Lista(req.EjeY)}");
+            s.AppendLine($"Eje Y ({(Unir(req.EjeYNombre, req.EjeYUnidad) is { Length: > 0 } ey ? ey : "sin unidad")}): {Lista(req.EjeY)}");
         }
         s.AppendLine();
         Tabla(s, req.ValoresOtra is not null && req.OtraEsOriginal ? "Valores en ESTA lectura (la modificada)" : "Valores en esta lectura", req.Valores, req.EjeY);

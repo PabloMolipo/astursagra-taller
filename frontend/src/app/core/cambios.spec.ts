@@ -12,7 +12,8 @@ function con(a: Uint8Array, cambios: Record<number, number[]>): Uint8Array {
 const mapa = (p: Partial<MapaCentralita>): MapaCentralita => ({
   id: 1, nombre: 'Mapa', origen: 'Manual', grupo: null, direccion: 0, columnas: 4, filas: 1, tipoDato: 'U16', bigEndian: false, porColumnas: false,
   factor: 1, desplazamiento: 0, unidad: null, ejeXDireccion: null, ejeXTipo: 'U16', ejeXFactor: 1, ejeXUnidad: null, ejeYDireccion: null, ejeYTipo: 'U16',
-  ejeYFactor: 1, ejeYUnidad: null, notas: null, ejeXDesplazamiento: 0, ejeXValores: null, ejeYDesplazamiento: 0, ejeYValores: null, ...p
+  ejeYFactor: 1, ejeYUnidad: null, notas: null, ejeXDesplazamiento: 0, ejeXValores: null, ejeYDesplazamiento: 0, ejeYValores: null,
+  descripcion: null, ejeXNombre: null, ejeYNombre: null, ...p
 });
 
 describe('identificación de cambios', () => {
