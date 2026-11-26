@@ -1,7 +1,7 @@
 import { CurrencyPipe, DatePipe, DecimalPipe } from '@angular/common';
 import { Component, computed, input } from '@angular/core';
 import { ESTADOS_ORDEN, ETAPAS_MULTIMEDIA, TIPOS_LINEA, TIPOS_SERVICIO } from '../core/etiquetas';
-import { ClienteDetalle, DatosTaller, EtapaMultimedia, FichaDiagnosis, MultimediaOrden, OrdenDetalle } from '../core/models';
+import { ClienteDetalle, DatosTaller, EtapaMultimedia, FichaDiagnosis, MultimediaOrden, OrdenDetalle, VehiculoDetalle, VehiculoResumen } from '../core/models';
 import { ESTADOS, RESULTADOS } from './ficha-diagnosis';
 
 /**
@@ -52,11 +52,31 @@ import { ESTADOS, RESULTADOS } from './ficha-diagnosis';
         </div>
         <div class="bloque">
           <h2>Vehículo</h2>
-          <strong>{{ o.vehiculo.marca }} {{ o.vehiculo.modelo }}</strong>
-          @if (o.vehiculo.matricula) { <div>Matrícula: <span class="mono">{{ o.vehiculo.matricula }}</span></div> }
-          @if (o.vehiculo.bastidor) { <div>Bastidor: <span class="mono">{{ o.vehiculo.bastidor }}</span></div> }
-          @if (o.kilometrosEntrada) { <div>Kilómetros: {{ o.kilometrosEntrada | number: '1.0-0' }}</div> }
-          @if (o.horasEntrada) { <div>Horas: {{ o.horasEntrada | number: '1.0-0' }}</div> }
+          <div class="ficha-vehiculo">
+            @if (imagen(); as img) {
+              <figure class="foto-vehiculo">
+                <img [src]="img.url" [alt]="'Imagen de ' + o.vehiculo.marca + ' ' + (o.vehiculo.modelo ?? '')" />
+                @if (img.generada) { <figcaption>Imagen orientativa</figcaption> }
+              </figure>
+            }
+            <div>
+              <strong>{{ o.vehiculo.marca }} {{ o.vehiculo.modelo }}</strong>
+              @if (tecnicos()?.variante; as variante) { <div class="sub">{{ variante }}</div> }
+              <table class="datos-vehiculo">
+                @if (o.vehiculo.matricula) { <tr><th>Matrícula</th><td class="mono">{{ o.vehiculo.matricula }}</td></tr> }
+                @if (o.vehiculo.bastidor) { <tr><th>Bastidor</th><td class="mono">{{ o.vehiculo.bastidor }}</td></tr> }
+                @if (tecnicos()?.fechaMatriculacion; as f) {
+                  <tr><th>Matriculación</th><td>{{ f | date: 'dd/MM/yyyy' }}</td></tr>
+                } @else if (o.vehiculo.anio) {
+                  <tr><th>Año</th><td>{{ o.vehiculo.anio }}</td></tr>
+                }
+                @if (motor()) { <tr><th>Motor</th><td>{{ motor() }}</td></tr> }
+                @if (vehiculo()?.color; as color) { <tr><th>Color</th><td>{{ color }}</td></tr> }
+                @if (o.kilometrosEntrada) { <tr><th>Kilómetros</th><td>{{ o.kilometrosEntrada | number: '1.0-0' }}</td></tr> }
+                @if (o.horasEntrada) { <tr><th>Horas</th><td>{{ o.horasEntrada | number: '1.0-0' }}</td></tr> }
+              </table>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -215,7 +235,13 @@ import { ESTADOS, RESULTADOS } from './ficha-diagnosis';
     .meta th { text-align: left; color: #555; font-weight: 500; padding: 1px 10px 1px 0; }
     .meta td { text-align: right; }
     .mono { font-family: var(--font-mono, monospace); }
-    .bloques { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 14px 0; }
+    .bloques { display: grid; grid-template-columns: 1fr 2fr; gap: 12px; margin: 14px 0; }
+    .ficha-vehiculo { display: flex; gap: 10px; align-items: flex-start; }
+    .foto-vehiculo { flex: none; width: 42mm; }
+    .foto-vehiculo img { aspect-ratio: 4 / 3; object-fit: cover; }
+    .hoja .datos-vehiculo { border-collapse: collapse; margin-top: 3px; font-size: 9pt; }
+    .hoja .datos-vehiculo th { text-align: left; font-weight: 500; color: #666 !important; padding: 0 10px 0 0; border: none; }
+    .hoja .datos-vehiculo td { padding: 0; border: none; }
     .bloque { border: 1px solid #ddd; padding: 8px 10px; font-size: 9.5pt; }
     h2 { font-family: var(--font-display); text-transform: uppercase; font-size: 9pt; letter-spacing: 0.08em; color: #555; margin: 0 0 4px; }
     .apartado { margin-top: 16px; }
@@ -234,6 +260,8 @@ import { ESTADOS, RESULTADOS } from './ficha-diagnosis';
     .totales td { text-align: right; padding: 3px 0; }
     .totales .total th, .totales .total td { border-top: 2px solid #111; font-size: 13pt; font-weight: 700; padding-top: 6px; }
     .rejilla { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+    /* Que el título de cada etapa no se quede solo al pie de una página, separado de sus fotos. */
+    .grupo h3, .apartado > h2 { break-after: avoid; }
     figure { margin: 0; break-inside: avoid; }
     figure img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; display: block; border: 1px solid #ddd; }
     figcaption { font-size: 8pt; color: #444; margin-top: 2px; }
@@ -257,6 +285,23 @@ export class HojaInforme {
   readonly soloCliente = input(true);
   /** Pie con la fecha de emisión y las firmas del taller y del cliente. */
   readonly firmas = input(true);
+  /** Ficha del vehículo (color, código de motor); opcional. */
+  readonly vehiculo = input<VehiculoDetalle | null>(null);
+  /** Visión 360 del vehículo: su imagen y los datos técnicos; opcional. */
+  readonly resumenVehiculo = input<VehiculoResumen | null>(null);
+
+  protected readonly imagen = computed(() => this.resumenVehiculo()?.imagen ?? null);
+  protected readonly tecnicos = computed(() => this.resumenVehiculo()?.tecnicos ?? null);
+  /** Código de motor, combustible, cilindrada y potencia, en una línea. */
+  protected readonly motor = computed(() => {
+    const t = this.tecnicos();
+    return [
+      this.vehiculo()?.motor ?? this.orden().vehiculo.motor,
+      t?.combustible,
+      t?.cilindrada ? `${t.cilindrada} cc` : null,
+      t?.potenciaCv ? `${Math.round(t.potenciaCv)} CV` : null
+    ].filter(Boolean).join(' · ');
+  });
 
   protected readonly tiposLinea = TIPOS_LINEA;
   protected readonly estados = ESTADOS_ORDEN;

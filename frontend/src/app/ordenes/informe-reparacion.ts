@@ -2,7 +2,7 @@ import { Component, inject, input, numberAttribute, OnInit, signal } from '@angu
 import { FormsModule } from '@angular/forms';
 import { catchError, forkJoin, of } from 'rxjs';
 import { Api, mensajeError } from '../core/api';
-import { ClienteDetalle, DatosTaller, FichaDiagnosis, MultimediaOrden, OrdenDetalle } from '../core/models';
+import { ClienteDetalle, DatosTaller, FichaDiagnosis, MultimediaOrden, OrdenDetalle, VehiculoDetalle, VehiculoResumen } from '../core/models';
 import { HojaInforme } from './hoja-informe';
 
 /**
@@ -30,7 +30,7 @@ import { HojaInforme } from './hoja-informe';
 
     @if (orden(); as o) {
       <app-hoja-informe [orden]="o" [cliente]="cliente()" [datos]="datos()" [ficha]="ficha()" [multimedia]="multimedia()"
-        [importes]="importes" [fotos]="fotos" [soloCliente]="soloCliente()" />
+        [importes]="importes" [fotos]="fotos" [soloCliente]="soloCliente()" [vehiculo]="vehiculo()" [resumenVehiculo]="resumenVehiculo()" />
     } @else if (!error()) {
       <p class="empty">Cargando…</p>
     }
@@ -56,6 +56,8 @@ export class InformeReparacion implements OnInit {
   protected readonly datos = signal<DatosTaller | null>(null);
   protected readonly ficha = signal<FichaDiagnosis | null>(null);
   protected readonly multimedia = signal<MultimediaOrden[]>([]);
+  protected readonly vehiculo = signal<VehiculoDetalle | null>(null);
+  protected readonly resumenVehiculo = signal<VehiculoResumen | null>(null);
   protected readonly error = signal<string | null>(null);
 
   protected importes = true;
@@ -77,6 +79,9 @@ export class InformeReparacion implements OnInit {
         this.multimedia.set(multimedia);
         document.title = `Informe OT-${String(orden.id).padStart(5, '0')} · ${orden.vehiculo.matricula ?? orden.vehiculo.marca}`;
         this.api.cliente(orden.vehiculo.clienteId).subscribe({ next: c => this.cliente.set(c), error: () => {} });
+        // Imagen y datos del vehículo: opcionales, si fallan el informe sale con los datos de la orden.
+        this.api.vehiculo(orden.vehiculo.id).subscribe({ next: v => this.vehiculo.set(v), error: () => {} });
+        this.api.resumenVehiculo(orden.vehiculo.id).subscribe({ next: r => this.resumenVehiculo.set(r), error: () => {} });
       },
       error: e => this.error.set(mensajeError(e))
     });

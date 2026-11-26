@@ -1,10 +1,10 @@
 import { CurrencyPipe, DatePipe } from '@angular/common';
 import { Component, computed, inject, input, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { catchError, forkJoin, from, mergeMap, of } from 'rxjs';
+import { catchError, forkJoin, from, mergeMap, of, switchMap } from 'rxjs';
 import { Api, mensajeError } from '../core/api';
 import { CATEGORIAS_GASTO, TIPOS_SERVICIO } from '../core/etiquetas';
-import { AjustesContabilidad, DatosTaller, FichaDiagnosis, MultimediaOrden, OrdenDetalle, ResumenContabilidad } from '../core/models';
+import { AjustesContabilidad, DatosTaller, FichaDiagnosis, MultimediaOrden, OrdenDetalle, ResumenContabilidad, VehiculoDetalle, VehiculoResumen } from '../core/models';
 import { HojaInforme } from '../ordenes/hoja-informe';
 import { NumOrdenPipe } from '../shared/pipes';
 
@@ -12,6 +12,8 @@ interface Reparacion {
   orden: OrdenDetalle;
   ficha: FichaDiagnosis | null;
   multimedia: MultimediaOrden[];
+  vehiculo: VehiculoDetalle | null;
+  resumenVehiculo: VehiculoResumen | null;
 }
 
 /**
@@ -29,7 +31,10 @@ interface Reparacion {
       <label><input type="checkbox" [(ngModel)]="anexo" /> Anexo de reparaciones</label>
       @if (anexo) {
         <label><input type="checkbox" [(ngModel)]="importes" /> Importes en el anexo</label>
-        <label title="Solo las fotos visibles para el cliente; el PDF puede pesar bastante"><input type="checkbox" [(ngModel)]="fotos" /> Fotos en el anexo</label>
+        <label title="Las fotos de cada orden, por etapas; con muchas, el PDF puede pesar bastante"><input type="checkbox" [(ngModel)]="fotos" /> Fotos de las órdenes</label>
+        @if (fotos) {
+          <label title="Si se desmarca, también salen las fotos internas del taller"><input type="checkbox" [(ngModel)]="soloCliente" /> Solo las visibles para el cliente</label>
+        }
       }
       @if (r() && !listo()) {
         <span class="progreso">Cargando reparaciones: {{ cargadas() }} de {{ r()!.ordenes.length }}…</span>
@@ -189,7 +194,8 @@ interface Reparacion {
       @if (anexo) {
         @for (x of reparaciones(); track x.orden.id) {
           <app-hoja-informe class="anexo" [orden]="x.orden" [datos]="datos()" [ficha]="x.ficha" [multimedia]="x.multimedia"
-            [importes]="importes" [fotos]="fotos" [firmas]="false" />
+            [vehiculo]="x.vehiculo" [resumenVehiculo]="x.resumenVehiculo"
+            [importes]="importes" [fotos]="fotos" [soloCliente]="soloCliente" [firmas]="false" />
         }
         @if (fallidas().length) {
           <p class="error no-imprimir">No se han podido cargar las órdenes {{ fallidas().join(', ') }}: no salen en el anexo.</p>
@@ -272,7 +278,9 @@ export class InformeMensual implements OnInit {
 
   protected anexo = true;
   protected importes = true;
-  protected fotos = false;
+  protected fotos = true;
+  /** El informe mensual es interno: por defecto salen todas las fotos, también las internas del taller. */
+  protected soloCliente = false;
 
   protected readonly cargadas = computed(() => this.cargadasPorId().size + this.fallidas().length);
   protected readonly listo = computed(() => !!this.r() && this.cargadas() >= this.r()!.ordenes.length);
@@ -321,18 +329,23 @@ export class InformeMensual implements OnInit {
     });
   }
 
-  /** Cada orden con su diagnosis y sus fotos, de cuatro en cuatro para no saturar la API. */
+  /** Cada orden con su diagnosis, sus fotos y la ficha e imagen del vehículo, de cuatro en cuatro para no saturar la API. */
   private cargarReparaciones(ids: number[]) {
     from(ids).pipe(
-      mergeMap(id => forkJoin({
-        orden: this.api.orden(id),
-        // La diagnosis y las fotos son opcionales: si fallan, la orden sale sin ellas.
-        ficha: this.api.ficha(id).pipe(catchError(() => of(null))),
-        multimedia: this.api.multimedia(id).pipe(catchError(() => of([] as MultimediaOrden[])))
-      }).pipe(catchError(() => {
-        this.fallidas.update(f => [...f, `OT-${String(id).padStart(5, '0')}`]);
-        return of(null);
-      })), 4)
+      mergeMap(id => this.api.orden(id).pipe(
+        // Todo lo demás es opcional: si falla, la orden sale sin ello.
+        switchMap(orden => forkJoin({
+          orden: of(orden),
+          ficha: this.api.ficha(id).pipe(catchError(() => of(null))),
+          multimedia: this.api.multimedia(id).pipe(catchError(() => of([] as MultimediaOrden[]))),
+          vehiculo: this.api.vehiculo(orden.vehiculo.id).pipe(catchError(() => of(null))),
+          resumenVehiculo: this.api.resumenVehiculo(orden.vehiculo.id).pipe(catchError(() => of(null)))
+        })),
+        catchError(() => {
+          this.fallidas.update(f => [...f, `OT-${String(id).padStart(5, '0')}`]);
+          return of(null);
+        })
+      ), 4)
     ).subscribe(x => {
       if (x) {
         this.cargadasPorId.update(m => new Map(m).set(x.orden.id, x));
