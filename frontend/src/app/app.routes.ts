@@ -113,6 +113,13 @@ export const routes: Routes = [
     ]
   },
 
+  // Informe contable de un mes (AAAA-MM) con el informe de cada reparación entregada como anexo, para imprimir o guardar en PDF.
+  {
+    path: 'imprimir/contabilidad/:mes',
+    title: T('Informe contable'),
+    canActivate: [soloTaller],
+    loadComponent: () => import('./gestion/informe-mensual').then(m => m.InformeMensual)
+  },
   // Informe de la reparación de una orden (diagnosis, trabajos y fotos), para imprimir o guardar en PDF.
   {
     path: 'imprimir/orden/:id/informe',

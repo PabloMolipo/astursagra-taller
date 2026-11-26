@@ -450,3 +450,12 @@ button:focus-visible {
   outline: 1px solid var(--primary);
   outline-offset: 2px;
 }
+
+// Los documentos para imprimir o guardar en PDF (informes, facturas…) van siempre sobre blanco, aunque se impriman
+// los gráficos de fondo: sin esto, el fondo oscuro del portal asoma bajo el final de cada página.
+@media print {
+  html,
+  body {
+    background: #fff !important;
+  }
+}

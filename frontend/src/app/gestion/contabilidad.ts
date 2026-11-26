@@ -75,6 +75,11 @@ const COLOR_COSTES = '#e0861f';
         <label class="fecha">Hasta <input type="date" [ngModel]="hasta()" (ngModelChange)="hasta.set($event); cargar()" /></label>
       }
     </div>
+    <div class="toolbar informe">
+      <label class="fecha">Informe del mes <input type="month" [ngModel]="mesInforme()" (ngModelChange)="mesInforme.set($event)" /></label>
+      <a class="btn" [class.disabled]="!mesInforme()" [routerLink]="['/imprimir/contabilidad', mesInforme()]" [queryParams]="conIva() ? {} : { iva: 0 }"
+        target="_blank" rel="noopener" title="Resumen contable del mes y, como anexo, el informe de cada reparación entregada; para imprimir o guardar en PDF">📄 Generar PDF</a>
+    </div>
 
     @if (error()) {
       <div class="error">{{ error() }}</div>
@@ -303,6 +308,8 @@ const COLOR_COSTES = '#e0861f';
   `,
   styles: `
     .periodo { align-items: flex-end; }
+    .informe { align-items: center; margin-top: -0.25rem; }
+    .informe .disabled { pointer-events: none; opacity: 0.5; }
     .fecha { display: inline-flex; gap: 0.4rem; align-items: center; font-size: 0.85rem; }
     .beneficio { background: var(--surface); border: 1px solid var(--border); border-left: 4px solid var(--primary); padding: 0.9rem 1.1rem; margin-bottom: 0.75rem; display: flex; flex-wrap: wrap; gap: 0.6rem 2rem; align-items: center; }
     .beneficio.negativo { border-left-color: #ff5c5c; }
@@ -375,6 +382,8 @@ export class ContabilidadResumen {
   protected readonly etiquetaIva = computed(() => (this.conIva() ? '(con IVA)' : '(sin IVA)'));
   protected readonly desde = signal(rangoPeriodo('mes')[0]);
   protected readonly hasta = signal(rangoPeriodo('mes')[1]);
+  /** Mes del informe en PDF (AAAA-MM): sigue al periodo elegido (su primer mes) y se puede cambiar. */
+  protected readonly mesInforme = signal(rangoPeriodo('mes')[0].slice(0, 7));
   protected readonly r = signal<ResumenContabilidad | null>(null);
   protected readonly error = signal<string | null>(null);
   protected readonly verTabla = signal(false);
@@ -451,6 +460,7 @@ export class ContabilidadResumen {
 
   protected cargar() {
     if (!this.desde() || !this.hasta()) return;
+    this.mesInforme.set(this.desde().slice(0, 7));
     this.api.resumenContabilidad(this.desde(), this.hasta(), this.conIva()).subscribe({
       next: r => {
         this.r.set(r);
